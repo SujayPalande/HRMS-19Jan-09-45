@@ -193,6 +193,7 @@ export function Sidebar({ className }: SidebarProps) {
       adminOnly: true,
       items: [
         { title: "PF/ESI/PT", href: "/compliance/pf-esi-pt", icon: <Calculator className="h-4 w-4" />, permissions: ["payroll.view"] },
+        { title: "PF/ESI/Bonus Reports", href: "/compliance/statutory", icon: <FileSpreadsheet className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "Form 16 & TDS", href: "/compliance/form16-tds", icon: <FileText className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "Statutory Reports", href: "/compliance/reports", icon: <FileBarChart className="h-4 w-4" />, permissions: ["payroll.view"] }
       ]
