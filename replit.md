@@ -18,6 +18,14 @@ HR Connect is a comprehensive HR management system built with React, TypeScript,
 - **Multi-role Support**: Admin, HR, Manager, Employee, and Developer roles
 
 ## Recent Changes
+- **2026-01-27**: Added Statutory Compliance reporting module
+  - New PF/ESI/Bonus Reports page at /compliance/statutory with tabbed interface
+  - PF Data: Export to Excel (.xlsx) and ECR text format (.txt) for EPFO portal upload
+  - ESI Data: Excel import/export with automatic eligibility calculation (gross ≤ ₹21,000)
+  - Bonus Data: Month-wise breakdown export with 8.33% calculation (capped at ₹7,000 basic)
+  - All calculations sync with payroll system's salary components configuration
+  - Added navigation link under Statutory Compliance section in sidebar
+
 - **2025-12-01**: Configured for cPanel subdirectory hosting at /hrms
   - Added wouter Router wrapper with dynamic base path support from Vite's BASE_URL
   - API calls automatically use BASE_URL or custom VITE_API_BASE environment variable
