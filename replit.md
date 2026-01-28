@@ -18,13 +18,19 @@ HR Connect is a comprehensive HR management system built with React, TypeScript,
 - **Multi-role Support**: Admin, HR, Manager, Employee, and Developer roles
 
 ## Recent Changes
-- **2026-01-28**: Added Maharashtra Factories Rules compliant reports
-  - Muster Roll - Form II: Attendance cum wage register with daily attendance tracking, working hours, wages calculation, deductions, and leave balance
-  - Leave Register - Form 20: Leave with wages register tracking days worked, lay-off, maternity leave, earned leave, and leave balance
-  - Both reports auto-fill from employee and attendance data
+- **2026-01-28**: Enhanced Muster Roll Reports with internal navigation and PDF export
+  - Created unified Muster Roll page with side navigation for switching between Form II and Form 20
+  - Both forms now accessible from a single page with internal navigation sidebar
+  - Added PDF export functionality using jsPDF with proper Maharashtra Factories Rules format
+  - Form II PDF: Includes establishment details, employee attendance grid, wages breakdown
+  - Form 20 PDF: Includes factory details, leave calculations, earned leave balance
   - Excel export with proper Form II and Form 20 column structure
+  - Download template feature for data import on both forms
   - Print functionality for physical record keeping
-  - Added navigation under Reports & Analytics section
+  - PF, ESI, Bonus exports in Statutory Compliance section verified against required formats:
+    - PF Data: Excel (.xlsx) and ECR text format (.txt) with #~# delimiter for EPFO portal
+    - ESI Data: Excel export with IP Number, wages, days worked columns
+    - Bonus Data: Month-wise breakdown with 8.33% calculation (capped at ₹7,000 basic)
 
 - **2026-01-27**: Added Statutory Compliance reporting module
   - New PF/ESI/Bonus Reports page at /compliance/statutory with tabbed interface
