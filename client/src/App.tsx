@@ -71,6 +71,8 @@ import ComplianceReportPage from "@/pages/reports/compliance-page";
 import AttendanceReportPage from "@/pages/reports/attendance-page";
 import LeaveReportPage from "@/pages/reports/leave-page";
 import PayrollReportPage from "@/pages/reports/payroll-page";
+import MusterRollPage from "@/pages/reports/muster-roll-page";
+import LeaveRegisterPage from "@/pages/reports/leave-register-page";
 
 import MasterDataPage from "@/pages/master-data-page";
 import BankMasterPage from "@/pages/masters/bank-master-page";
@@ -174,6 +176,8 @@ function AppRouter() {
       <ProtectedRoute path="/reports/payroll" component={PayrollReportPage} />
       <ProtectedRoute path="/reports/headcount" component={HeadcountReportPage} />
       <ProtectedRoute path="/reports/compliance" component={ComplianceReportPage} />
+      <ProtectedRoute path="/reports/muster-roll" component={MusterRollPage} />
+      <ProtectedRoute path="/reports/leave-register" component={LeaveRegisterPage} />
       
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/developer/system-settings" component={SystemSettingsPage} />
