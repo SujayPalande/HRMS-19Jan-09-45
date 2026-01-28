@@ -177,8 +177,8 @@ function AppRouter() {
       <ProtectedRoute path="/reports/payroll" component={PayrollReportPage} />
       <ProtectedRoute path="/reports/headcount" component={HeadcountReportPage} />
       <ProtectedRoute path="/reports/compliance" component={ComplianceReportPage} />
-      <ProtectedRoute path="/reports/muster-roll" component={MusterRollCombinedPage} />
-      <ProtectedRoute path="/reports/leave-register" component={MusterRollCombinedPage} />
+      <ProtectedRoute path="/reports/muster-roll" component={MusterRollPage} />
+      <ProtectedRoute path="/reports/leave-register" component={LeaveRegisterPage} />
       
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/developer/system-settings" component={SystemSettingsPage} />

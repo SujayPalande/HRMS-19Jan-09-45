@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Printer, FileSpreadsheet, Download } from "lucide-react";
+import { Printer, FileSpreadsheet, Download, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface Employee {
   id: number;
@@ -18,6 +20,7 @@ interface Employee {
   departmentId: number;
   joinDate?: string;
   basicSalary?: number;
+  salary?: number;
 }
 
 interface Leave {
@@ -38,6 +41,15 @@ interface Attendance {
   hoursWorked?: number;
 }
 
+interface PayrollRecord {
+  id: number;
+  userId: number;
+  month: number;
+  year: number;
+  basicSalary: number;
+  netSalary: number;
+}
+
 export default function LeaveRegisterPage() {
   const currentDate = new Date();
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
@@ -55,6 +67,20 @@ export default function LeaveRegisterPage() {
   const { data: attendanceRecords = [] } = useQuery<Attendance[]>({
     queryKey: ["/api/attendance"],
   });
+
+  const { data: payrollRecords = [] } = useQuery<PayrollRecord[]>({
+    queryKey: ["/api/payroll"],
+  });
+
+  const getAverageBasicSalary = (employeeId: number): number => {
+    const yearRecords = payrollRecords.filter(
+      p => p.userId === employeeId && p.year === selectedYear
+    );
+    if (yearRecords.length > 0) {
+      return Math.round(yearRecords.reduce((sum, r) => sum + r.basicSalary, 0) / yearRecords.length);
+    }
+    return 0;
+  };
 
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i);
 
@@ -98,7 +124,8 @@ export default function LeaveRegisterPage() {
     const totalLeave = earnedLeave + previousBalance;
     const balanceLeave = totalLeave - leaveEnjoyed;
 
-    const basicSalary = employee.basicSalary || 15000;
+    const payrollBasic = getAverageBasicSalary(employee.id);
+    const basicSalary = payrollBasic || employee.basicSalary || employee.salary || 15000;
     const dailyRate = Math.round(basicSalary / 26);
     const leaveWages = dailyRate * leaveEnjoyed;
 
@@ -112,9 +139,73 @@ export default function LeaveRegisterPage() {
       earnedLeave,
       totalLeave,
       balanceLeave,
+      basicSalary,
       dailyRate,
       leaveWages
     };
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    
+    doc.setFontSize(12);
+    doc.text("The Maharashtra Factories Rules", doc.internal.pageSize.width / 2, 12, { align: "center" });
+    doc.setFontSize(16);
+    doc.text("FORM 20", doc.internal.pageSize.width / 2, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.text("(See Rules 105 and 106)", doc.internal.pageSize.width / 2, 26, { align: "center" });
+    doc.text("Register of leave with wages", doc.internal.pageSize.width / 2, 32, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.text(`Factory: ${factoryName}`, 14, 42);
+    doc.text(`Department: ${departmentName}`, 14, 48);
+    doc.text(`Part I - Adults`, doc.internal.pageSize.width - 60, 42);
+    doc.text(`Calendar Year: ${selectedYear}`, doc.internal.pageSize.width - 60, 48);
+
+    const tableData = employees.map((emp, index) => {
+      const data = calculateLeaveData(emp);
+      return [
+        index + 1,
+        emp.employeeId,
+        `${emp.firstName} ${emp.lastName}`,
+        emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('en-IN') : "-",
+        data.daysWorked,
+        data.layOffDays,
+        data.maternityLeave,
+        data.leaveEnjoyed,
+        data.totalDays,
+        data.previousBalance,
+        data.earnedLeave,
+        data.balanceLeave,
+        data.dailyRate,
+        data.leaveWages > 0 ? data.leaveWages : "-"
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 54,
+      head: [[
+        "Sr.", "Emp ID", "Name", "DOJ", "Days Worked", "Lay-off", "Maternity", 
+        "Leave Enjoyed", "Total", "Prev Bal", "Earned", "Balance", "Daily Rate", "Leave Wages"
+      ]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 7, cellPadding: 1.5 },
+      headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 7 },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { cellWidth: 18 },
+        2: { cellWidth: 35 },
+        3: { cellWidth: 20 }
+      }
+    });
+
+    const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 150;
+    doc.setFontSize(8);
+    doc.text("Signature of Employer: ________________________", 14, finalY + 15);
+    doc.text("Date: ________________________", doc.internal.pageSize.width - 60, finalY + 15);
+
+    doc.save(`Leave_Register_Form_20_${selectedYear}.pdf`);
   };
 
   const exportToExcel = () => {
@@ -247,6 +338,10 @@ export default function LeaveRegisterPage() {
             <Button variant="outline" onClick={handlePrint} data-testid="button-print">
               <Printer className="h-4 w-4 mr-2" />
               Print
+            </Button>
+            <Button variant="outline" onClick={exportToPDF} data-testid="button-export-pdf">
+              <FileText className="h-4 w-4 mr-2" />
+              Export PDF
             </Button>
             <Button onClick={exportToExcel} data-testid="button-export-excel">
               <FileSpreadsheet className="h-4 w-4 mr-2" />

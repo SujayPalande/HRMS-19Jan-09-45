@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Printer, FileSpreadsheet, Upload } from "lucide-react";
+import { Download, Printer, FileSpreadsheet, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface Employee {
   id: number;
@@ -21,6 +23,7 @@ interface Employee {
   joinDate?: string;
   basicSalary?: number;
   hra?: number;
+  salary?: number;
 }
 
 interface Attendance {
@@ -31,6 +34,21 @@ interface Attendance {
   checkOut?: string;
   status: string;
   hoursWorked?: number;
+}
+
+interface PayrollRecord {
+  id: number;
+  userId: number;
+  month: number;
+  year: number;
+  basicSalary: number;
+  hra?: number;
+  allowances?: number;
+  deductions?: number;
+  pfContribution?: number;
+  esiContribution?: number;
+  netSalary: number;
+  status: string;
 }
 
 export default function MusterRollPage() {
@@ -47,6 +65,16 @@ export default function MusterRollPage() {
   const { data: attendanceRecords = [] } = useQuery<Attendance[]>({
     queryKey: ["/api/attendance"],
   });
+
+  const { data: payrollRecords = [] } = useQuery<PayrollRecord[]>({
+    queryKey: ["/api/payroll"],
+  });
+
+  const getPayrollForEmployee = (employeeId: number): PayrollRecord | undefined => {
+    return payrollRecords.find(
+      p => p.userId === employeeId && p.month === selectedMonth && p.year === selectedYear
+    );
+  };
 
   const months = [
     { value: 1, label: "January" }, { value: 2, label: "February" }, { value: 3, label: "March" },
@@ -103,29 +131,106 @@ export default function MusterRollPage() {
       }
     }
 
-    const basicSalary = employee.basicSalary || 15000;
-    const hra = employee.hra || 5000;
+    const payrollData = getPayrollForEmployee(employee.id);
+    const basicSalary = payrollData?.basicSalary || employee.basicSalary || employee.salary || 15000;
+    const hra = payrollData?.hra || employee.hra || Math.round(basicSalary * 0.4);
     const dailyRate = basicSalary / 26;
     const hourlyRate = dailyRate / 8;
     const normalWages = Math.round(dailyRate * totalDaysWorked);
     const hraPayable = Math.round((hra / 26) * totalDaysWorked);
     const overtimePayable = Math.round(overtimeHours * hourlyRate * 2);
-    const grossWages = normalWages + hraPayable + overtimePayable;
-    const deductions = 0;
-    const netWages = grossWages - deductions;
+    const allowances = payrollData?.allowances || 0;
+    const grossWages = normalWages + hraPayable + overtimePayable + allowances;
+    const pfDeduction = payrollData?.pfContribution || Math.round(basicSalary * 0.12);
+    const esiDeduction = payrollData?.esiContribution || (grossWages <= 21000 ? Math.round(grossWages * 0.0075) : 0);
+    const otherDeductions = payrollData?.deductions || 0;
+    const totalDeductions = pfDeduction + esiDeduction + otherDeductions;
+    const netWages = payrollData?.netSalary || (grossWages - totalDeductions);
 
     return {
       totalDaysWorked,
       totalHoursWorked,
       overtimeHours,
       dailyRate: Math.round(dailyRate),
+      basicSalary,
       normalWages,
       hraPayable,
       overtimePayable,
+      allowances,
       grossWages,
-      deductions,
+      pfDeduction,
+      esiDeduction,
+      otherDeductions,
+      totalDeductions,
       netWages
     };
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const monthName = months.find(m => m.value === selectedMonth)?.label || "";
+    
+    doc.setFontSize(14);
+    doc.text("Form II - Muster Roll cum Wage Register", doc.internal.pageSize.width / 2, 15, { align: "center" });
+    doc.setFontSize(10);
+    doc.text("[See Rule 27(1)]", doc.internal.pageSize.width / 2, 21, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.text(`Name of the Establishment: ${establishmentName}`, 14, 30);
+    doc.text(`Name of the Employer: ${employerName}`, 14, 36);
+    doc.text(`For the month of: ${monthName} ${selectedYear}`, doc.internal.pageSize.width - 14, 30, { align: "right" });
+
+    const dayHeaders = Array.from({ length: Math.min(daysInMonth, 15) }, (_, i) => String(i + 1));
+    
+    const tableData = employees.map((emp, index) => {
+      const data = calculateEmployeeData(emp);
+      const dob = emp.dateOfBirth ? new Date(emp.dateOfBirth) : null;
+      const age = dob ? Math.floor((new Date().getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : "-";
+      const attendanceMarks = Array.from({ length: Math.min(daysInMonth, 15) }, (_, i) => getAttendanceForDay(emp.id, i + 1));
+      
+      return [
+        index + 1,
+        `${emp.firstName} ${emp.lastName}`,
+        `${age}/${emp.gender?.[0] || "M"}`,
+        emp.position || "-",
+        ...attendanceMarks,
+        data.totalDaysWorked,
+        data.basicSalary,
+        data.normalWages,
+        data.hraPayable,
+        data.pfDeduction,
+        data.esiDeduction,
+        data.grossWages,
+        data.totalDeductions,
+        data.netWages
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 42,
+      head: [[
+        "Sl", "Name", "Age/Sex", "Designation",
+        ...dayHeaders,
+        "Days", "Basic", "Wages", "HRA", "PF", "ESI", "Gross", "Ded.", "Net"
+      ]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 6, cellPadding: 1 },
+      headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 6 },
+      columnStyles: {
+        0: { cellWidth: 8 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 12 },
+        3: { cellWidth: 18 }
+      }
+    });
+
+    const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 150;
+    doc.setFontSize(8);
+    doc.text("Signature of Employer: ________________________", 14, finalY + 15);
+    doc.text("Date: ________________________", doc.internal.pageSize.width - 60, finalY + 15);
+
+    doc.save(`Muster_Roll_Form_II_${monthName}_${selectedYear}.pdf`);
   };
 
   const exportToExcel = () => {
@@ -266,6 +371,10 @@ export default function MusterRollPage() {
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
+          <Button variant="outline" onClick={exportToPDF} data-testid="button-export-pdf">
+            <FileText className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
           <Button onClick={exportToExcel} data-testid="button-export-excel">
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Export Excel
@@ -399,7 +508,7 @@ export default function MusterRollPage() {
                       <TableCell className="text-center">{data.hraPayable}</TableCell>
                       <TableCell className="text-center">{data.overtimePayable}</TableCell>
                       <TableCell className="text-center font-medium">{data.grossWages}</TableCell>
-                      <TableCell className="text-center">{data.deductions}</TableCell>
+                      <TableCell className="text-center">{data.totalDeductions}</TableCell>
                       <TableCell className="text-center font-medium">{data.netWages}</TableCell>
                     </TableRow>
                   );
