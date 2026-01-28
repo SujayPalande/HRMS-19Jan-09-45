@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -598,31 +599,32 @@ export default function MusterRollCombinedPage() {
   };
 
   return (
-    <div className="h-full overflow-auto">
-      <div className="flex h-full">
-        <aside className="w-56 border-r border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
-          <div className="p-4">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">Muster Roll Reports</h2>
-            <nav className="space-y-1">
-              {sideNavItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveForm(item.id)}
-                  data-testid={`nav-${item.id}`}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors text-left",
-                    activeForm === item.id
-                      ? "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300 font-medium"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-        </aside>
+    <AppLayout>
+      <div className="h-full overflow-auto">
+        <div className="flex h-full">
+          <aside className="w-56 border-r border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
+            <div className="p-4">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">Muster Roll Reports</h2>
+              <nav className="space-y-1">
+                {sideNavItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveForm(item.id)}
+                    data-testid={`nav-${item.id}`}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors text-left",
+                      activeForm === item.id
+                        ? "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300 font-medium"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    )}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </aside>
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="space-y-6">
@@ -933,7 +935,8 @@ export default function MusterRollCombinedPage() {
             </div>
           </div>
         </main>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
