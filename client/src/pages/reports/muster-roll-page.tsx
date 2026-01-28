@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Printer, FileSpreadsheet } from "lucide-react";
+import { Download, Printer, FileSpreadsheet, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
@@ -210,14 +210,58 @@ export default function MusterRollPage() {
     window.print();
   };
 
+  const downloadTemplate = () => {
+    const dayColumns = Array.from({ length: 31 }, (_, i) => i + 1);
+    const templateHeader = [
+      ["Form II - Muster Roll cum Wage Register - IMPORT TEMPLATE"],
+      ["Instructions: Fill the data below and import. Attendance codes: P=Present, A=Absent, L=Leave, H=Half-day, WO=Weekly Off, HO=Holiday"],
+      [""],
+      ["Name of the Establishment:", ""],
+      ["Name of the Employer:", ""],
+      ["For the month of:", ""],
+      [""]
+    ];
+
+    const tableHeader = [
+      "Employee ID", "Full Name", "Age", "Gender (M/F)", "Designation", "Date of Joining (DD/MM/YYYY)",
+      "Working Hours From", "Working Hours To", "Interval From", "Interval To",
+      ...dayColumns.map(d => `Day ${d}`),
+      "Basic Salary", "HRA", "Overtime Hours", "Advances", "Fines", "Damages"
+    ];
+
+    const sampleRow = [
+      "EMP001", "John Doe", "30", "M", "Worker", "01/01/2024",
+      "09:00", "18:00", "13:00", "14:00",
+      ...Array(31).fill("P"),
+      "15000", "5000", "0", "0", "0", "0"
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([...templateHeader, tableHeader, sampleRow, []]);
+    ws["!cols"] = [
+      { wch: 12 }, { wch: 20 }, { wch: 6 }, { wch: 10 }, { wch: 15 }, { wch: 18 },
+      { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 },
+      ...Array(31).fill({ wch: 5 }),
+      { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 10 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Muster Roll Template");
+    XLSX.writeFile(wb, "Muster_Roll_Form_II_Template.xlsx");
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="h-full overflow-auto">
+      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" data-testid="text-page-title">Muster Roll - Form II</h1>
           <p className="text-muted-foreground">Maharashtra Factories Rules - Muster Roll cum Wage Register</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={downloadTemplate} data-testid="button-download-template">
+            <Download className="h-4 w-4 mr-2" />
+            Download Template
+          </Button>
           <Button variant="outline" onClick={handlePrint} data-testid="button-print">
             <Printer className="h-4 w-4 mr-2" />
             Print
@@ -367,14 +411,15 @@ export default function MusterRollPage() {
       </Card>
 
       <div className="print:block hidden text-sm mt-8">
-        <div className="flex justify-between">
-          <div>
-            <p>Signature of the Authorised Representative:</p>
-            <p>Principal Employer (In the case of Contract Labour):</p>
-          </div>
-          <div className="text-right">
-            <p>Signature of the Employer or the person authorised</p>
-            <p>by him to authenticate the above entries with the company seal</p>
+          <div className="flex justify-between">
+            <div>
+              <p>Signature of the Authorised Representative:</p>
+              <p>Principal Employer (In the case of Contract Labour):</p>
+            </div>
+            <div className="text-right">
+              <p>Signature of the Employer or the person authorised</p>
+              <p>by him to authenticate the above entries with the company seal</p>
+            </div>
           </div>
         </div>
       </div>

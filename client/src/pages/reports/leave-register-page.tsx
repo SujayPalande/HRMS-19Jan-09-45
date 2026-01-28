@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Printer, FileSpreadsheet } from "lucide-react";
+import { Printer, FileSpreadsheet, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
@@ -196,24 +196,64 @@ export default function LeaveRegisterPage() {
     window.print();
   };
 
+  const downloadTemplate = () => {
+    const templateHeader = [
+      ["The Maharashtra Factories Rules - FORM 20 - IMPORT TEMPLATE"],
+      ["Instructions: Fill employee leave data below and import"],
+      [""],
+      ["Factory:", ""],
+      ["Department:", ""],
+      ["Calendar Year:", ""],
+      [""]
+    ];
+
+    const tableHeader = [
+      "Employee ID", "Full Name", "Father's Name", "Date of Joining (DD/MM/YYYY)",
+      "Days of Work Performed", "Days of Lay-off", "Days of Maternity Leave",
+      "Leave with Wages Enjoyed", "Balance from Preceding Year",
+      "Normal Rate of Wages", "Remarks"
+    ];
+
+    const sampleRow = [
+      "EMP001", "John Doe", "Father Name", "01/01/2024",
+      "240", "0", "0", "12", "5", "577", ""
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([...templateHeader, tableHeader, sampleRow, []]);
+    ws["!cols"] = [
+      { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+      { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 18 },
+      { wch: 20 }, { wch: 15 }, { wch: 20 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leave Register Template");
+    XLSX.writeFile(wb, "Leave_Register_Form_20_Template.xlsx");
+  };
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Leave Register - Form 20</h1>
-          <p className="text-muted-foreground">Maharashtra Factories Rules - Register of leave with wages</p>
+    <div className="h-full overflow-auto">
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold" data-testid="text-page-title">Leave Register - Form 20</h1>
+            <p className="text-muted-foreground">Maharashtra Factories Rules - Register of leave with wages</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={downloadTemplate} data-testid="button-download-template">
+              <Download className="h-4 w-4 mr-2" />
+              Download Template
+            </Button>
+            <Button variant="outline" onClick={handlePrint} data-testid="button-print">
+              <Printer className="h-4 w-4 mr-2" />
+              Print
+            </Button>
+            <Button onClick={exportToExcel} data-testid="button-export-excel">
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export Excel
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handlePrint} data-testid="button-print">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button onClick={exportToExcel} data-testid="button-export-excel">
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Export Excel
-          </Button>
-        </div>
-      </div>
 
       <Card>
         <CardHeader>
@@ -338,7 +378,8 @@ export default function LeaveRegisterPage() {
       </Card>
 
       <div className="text-xs text-muted-foreground italic">
-        Note: Separate page will be allotted to each worker as per Form 20 requirements. This consolidated view is for overview purposes.
+          Note: Separate page will be allotted to each worker as per Form 20 requirements. This consolidated view is for overview purposes.
+        </div>
       </div>
     </div>
   );
