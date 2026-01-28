@@ -18,6 +18,17 @@ HR Connect is a comprehensive HR management system built with React, TypeScript,
 - **Multi-role Support**: Admin, HR, Manager, Employee, and Developer roles
 
 ## Recent Changes
+- **2026-01-28**: Added Payroll Test Run feature for simulation and verification
+  - New Test Run page under Payroll Management at /payroll/test-run
+  - Date range options: Last 15 days, Last 30 days, Current Month, Custom range
+  - Test attendance data generator simulating real-world scenarios
+  - Full payroll calculation with ESI, PF, PT, LWF breakdowns
+  - Optional bonus calculation with configurable percentage (default 8.33%)
+  - Real-time summary dashboard showing all totals
+  - Export options: Muster Roll (PDF/Excel), Leave Register (PDF), Statutory Report (Excel)
+  - Tabbed interface for Payroll Overview, Muster Roll, and Leave Register views
+  - Color-coded attendance status indicators (Present, Half-day, Leave, Absent)
+
 - **2026-01-28**: Payroll data sync across all statutory reports and separate report pages
   - Removed internal side navigation from Muster Roll page - now separate pages for Form II and Form 20
   - Muster Roll - Form II: Accessible at /reports/muster-roll with PDF and Excel export
