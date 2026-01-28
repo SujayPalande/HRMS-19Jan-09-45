@@ -18,19 +18,19 @@ HR Connect is a comprehensive HR management system built with React, TypeScript,
 - **Multi-role Support**: Admin, HR, Manager, Employee, and Developer roles
 
 ## Recent Changes
-- **2026-01-28**: Enhanced Muster Roll Reports with internal navigation and PDF export
-  - Created unified Muster Roll page with side navigation for switching between Form II and Form 20
-  - Both forms now accessible from a single page with internal navigation sidebar
-  - Added PDF export functionality using jsPDF with proper Maharashtra Factories Rules format
-  - Form II PDF: Includes establishment details, employee attendance grid, wages breakdown
-  - Form 20 PDF: Includes factory details, leave calculations, earned leave balance
-  - Excel export with proper Form II and Form 20 column structure
-  - Download template feature for data import on both forms
-  - Print functionality for physical record keeping
-  - PF, ESI, Bonus exports in Statutory Compliance section verified against required formats:
-    - PF Data: Excel (.xlsx) and ECR text format (.txt) with #~# delimiter for EPFO portal
-    - ESI Data: Excel export with IP Number, wages, days worked columns
-    - Bonus Data: Month-wise breakdown with 8.33% calculation (capped at ₹7,000 basic)
+- **2026-01-28**: Payroll data sync across all statutory reports and separate report pages
+  - Removed internal side navigation from Muster Roll page - now separate pages for Form II and Form 20
+  - Muster Roll - Form II: Accessible at /reports/muster-roll with PDF and Excel export
+  - Leave Register - Form 20: Accessible at /reports/leave-register with PDF and Excel export
+  - Full payroll data synchronization across all reports:
+    - Muster Roll now uses payroll records for wages calculation (basic, HRA, PF, ESI deductions)
+    - Leave Register syncs with payroll data for daily rate calculations
+    - Statutory Compliance (PF/ESI/Bonus) now fetches payroll and attendance data
+  - PF Data: Uses actual payroll contributions when available, calculates from salary otherwise
+  - ESI Data: Uses payroll gross wages and actual attendance days worked
+  - Bonus Data: Uses monthly payroll basic salary for 8.33% calculation (capped at ₹7,000)
+  - PDF export functionality on both Muster Roll and Leave Register pages
+  - All statutory exports verified against government format requirements
 
 - **2026-01-27**: Added Statutory Compliance reporting module
   - New PF/ESI/Bonus Reports page at /compliance/statutory with tabbed interface
