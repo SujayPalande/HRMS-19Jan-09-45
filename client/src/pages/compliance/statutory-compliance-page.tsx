@@ -87,6 +87,46 @@ export default function StatutoryCompliancePage() {
     queryKey: ["/api/departments"],
   });
 
+  interface PayrollRecord {
+    id: number;
+    userId: number;
+    month: number;
+    year: number;
+    basicSalary: number;
+    hra?: number;
+    allowances?: number;
+    deductions?: number;
+    pfContribution?: number;
+    esiContribution?: number;
+    netSalary: number;
+    status: string;
+  }
+
+  const { data: payrollRecords = [] } = useQuery<PayrollRecord[]>({
+    queryKey: ["/api/payroll"],
+  });
+
+  const { data: attendanceRecords = [] } = useQuery<{ userId: number; date: string; status: string }[]>({
+    queryKey: ["/api/attendance"],
+  });
+
+  const getPayrollForEmployee = (employeeId: number, month: number, year: number): PayrollRecord | undefined => {
+    return payrollRecords.find(
+      p => p.userId === employeeId && p.month === month && p.year === year
+    );
+  };
+
+  const getWorkedDaysForMonth = (employeeId: number, month: number, year: number): number => {
+    const monthStr = String(month).padStart(2, '0');
+    const monthRecords = attendanceRecords.filter(a => {
+      const dateStr = a.date;
+      return a.userId === employeeId && 
+             dateStr.startsWith(`${year}-${monthStr}`) && 
+             a.status === 'present';
+    });
+    return monthRecords.length > 0 ? monthRecords.length : 26;
+  };
+
   const { data: systemSettings } = useQuery({
     queryKey: ["/api/settings/system"],
     queryFn: async () => {
@@ -116,13 +156,31 @@ export default function StatutoryCompliancePage() {
   const calculateESIContribution = (grossSalary: number) => grossSalary <= 21000 ? Math.round(grossSalary * 0.0075) : 0;
 
   const generatePFData = (): PFData[] => {
+    const [yearStr, monthStr] = selectedMonth.split('-');
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr);
+
     return employees
       .filter(emp => emp.isActive && emp.pfApplicable !== false && emp.salary)
       .map(emp => {
-        const grossSalary = calculateGrossSalary(emp.salary || 0);
-        const basicSalary = calculateBasicSalary(grossSalary);
+        const payrollData = getPayrollForEmployee(emp.id, month, year);
+        const workedDays = getWorkedDaysForMonth(emp.id, month, year);
+        
+        let grossSalary: number;
+        let basicSalary: number;
+        let pfContribution: number;
+        
+        if (payrollData) {
+          grossSalary = payrollData.basicSalary + (payrollData.hra || 0) + (payrollData.allowances || 0);
+          basicSalary = payrollData.basicSalary;
+          pfContribution = payrollData.pfContribution || calculatePFContribution(calculatePFWages(basicSalary));
+        } else {
+          grossSalary = calculateGrossSalary(emp.salary || 0);
+          basicSalary = calculateBasicSalary(grossSalary);
+          pfContribution = calculatePFContribution(calculatePFWages(basicSalary));
+        }
+        
         const pfWages = calculatePFWages(basicSalary);
-        const pfContribution = calculatePFContribution(pfWages);
         const employerPF = calculateEmployerPF(pfWages);
         const pensionFund = calculatePensionFund(pfWages);
 
@@ -138,21 +196,41 @@ export default function StatutoryCompliancePage() {
           pensionFund,
           ncp: 0,
           monthDays: 26,
-          workedDays: 26
+          workedDays
         };
       });
   };
 
   const generateESIData = (): ESIData[] => {
+    const [yearStr, monthStr] = selectedMonth.split('-');
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr);
+
     return employees
       .filter(emp => emp.isActive && emp.esicApplicable !== false && emp.salary)
-      .filter(emp => calculateGrossSalary(emp.salary || 0) <= 21000)
+      .filter(emp => {
+        const payrollData = getPayrollForEmployee(emp.id, month, year);
+        if (payrollData) {
+          const grossSalary = payrollData.basicSalary + (payrollData.hra || 0) + (payrollData.allowances || 0);
+          return grossSalary <= 21000;
+        }
+        return calculateGrossSalary(emp.salary || 0) <= 21000;
+      })
       .map(emp => {
-        const grossSalary = calculateGrossSalary(emp.salary || 0);
+        const payrollData = getPayrollForEmployee(emp.id, month, year);
+        const workedDays = getWorkedDaysForMonth(emp.id, month, year);
+        
+        let grossSalary: number;
+        if (payrollData) {
+          grossSalary = payrollData.basicSalary + (payrollData.hra || 0) + (payrollData.allowances || 0);
+        } else {
+          grossSalary = calculateGrossSalary(emp.salary || 0);
+        }
+        
         return {
           ipNumber: emp.esicNumber || `33${Math.floor(10000000 + Math.random() * 90000000)}`,
           ipName: `${emp.firstName} ${emp.lastName}`.toUpperCase(),
-          daysWorked: 26,
+          daysWorked: workedDays,
           totalMonthlyWages: Math.round(grossSalary),
           reasonCode: 0,
           lastWorkingDay: ''
@@ -167,20 +245,29 @@ export default function StatutoryCompliancePage() {
     return employees
       .filter(emp => emp.isActive && emp.bonusApplicable !== false && emp.salary)
       .map((emp, index) => {
-        const basicSalary = calculateBasicSalary(calculateGrossSalary(emp.salary || 0));
-        const bonusEligibleSalary = Math.min(basicSalary, 7000);
-        
         const monthlyData = months.map((month, idx) => {
-          const monthDate = new Date(idx < 9 ? year : year + 1, idx < 9 ? idx + 3 : idx - 9, 1);
+          const actualMonth = idx < 9 ? idx + 4 : idx - 8;
+          const actualYear = idx < 9 ? year : year + 1;
+          const monthDate = new Date(actualYear, actualMonth - 1, 1);
           const isJoined = emp.joinDate ? new Date(emp.joinDate) <= monthDate : true;
-          const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
-          const workedDays = isJoined ? Math.min(daysInMonth, 30) : 0;
+          
+          const payrollData = getPayrollForEmployee(emp.id, actualMonth, actualYear);
+          const workedDays = getWorkedDaysForMonth(emp.id, actualMonth, actualYear);
+          
+          let basicSalary: number;
+          if (payrollData) {
+            basicSalary = payrollData.basicSalary;
+          } else {
+            basicSalary = calculateBasicSalary(calculateGrossSalary(emp.salary || 0));
+          }
+          
+          const bonusEligibleSalary = Math.min(basicSalary, 7000);
           const bonusAmount = isJoined ? Math.round((bonusEligibleSalary * 8.33 / 100)) : 0;
           
           return {
             month: `${month}${idx < 9 ? year : year + 1}`,
             amount: bonusAmount,
-            days: workedDays
+            days: isJoined ? workedDays : 0
           };
         });
 
