@@ -290,9 +290,13 @@ export default function EmployeeDetailPage() {
     const epf = basicSalary <= 15000 ? (basicSalary * 0.12) : 1800; // 12% of Basic
     const esic = grossSalary <= 21000 ? (grossSalary * 0.0075) : 0; // 0.75% of Gross
     const professionalTax = 200; // Fixed
-    const lwf = 25; // Fixed
+    // MLWF - Half yearly (June & December only) - Employee: 25, Employer: 75
+    const currentMonthNum = new Date().getMonth() + 1;
+    const isMlwfMonth = currentMonthNum === 6 || currentMonthNum === 12;
+    const mlwfEmployee = isMlwfMonth ? 25 : 0;
+    const mlwfEmployer = isMlwfMonth ? 75 : 0;
 
-    const totalDeductions = epf + esic + professionalTax + lwf;
+    const totalDeductions = epf + esic + professionalTax + mlwfEmployee;
     const netSalary = grossSalary - totalDeductions;
     
     return {
@@ -307,7 +311,8 @@ export default function EmployeeDetailPage() {
       epf,
       esic,
       professionalTax,
-      lwf,
+      mlwfEmployee,
+      mlwfEmployer,
       totalDeductions,
       netSalary
     };

@@ -14,8 +14,8 @@ export default function LWFSubcodePage() {
     <AppLayout>
       <div className="p-6 max-w-4xl mx-auto">
         <div className="bg-gradient-to-r from-teal-900 to-emerald-900 -mx-6 -mt-6 px-8 py-10 mb-8 border-b border-teal-700 shadow-2xl">
-          <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">L.W.F. SubCode Master</h1>
-          <p className="text-teal-300 mt-2 font-medium">Labour Welfare Fund regional configuration</p>
+          <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">M.L.W.F. SubCode Master</h1>
+          <p className="text-teal-300 mt-2 font-medium">Maharashtra Labour Welfare Fund (Half-yearly: June & December - Employee ₹25, Employer ₹75)</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
@@ -36,7 +36,7 @@ export default function LWFSubcodePage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-50/30 border-none">
-                      <TableHead className="font-black text-[10px] tracking-widest uppercase p-5">LWF Code</TableHead>
+                      <TableHead className="font-black text-[10px] tracking-widest uppercase p-5">MLWF Code</TableHead>
                       <TableHead className="font-black text-[10px] tracking-widest uppercase p-5">Description</TableHead>
                       <TableHead className="font-black text-[10px] tracking-widest uppercase p-5 text-right">Actions</TableHead>
                     </TableRow>

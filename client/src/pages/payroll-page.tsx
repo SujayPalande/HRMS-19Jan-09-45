@@ -399,7 +399,12 @@ export default function PayrollPage() {
   const calculateEPF = (basicSalary: number) => Math.min(basicSalary || 0, 15000) * 0.12;
   const calculateESIC = (grossSalary: number) => (grossSalary || 0) <= 21000 ? Math.round((grossSalary || 0) * 0.0075) : 0;
   const calculateProfessionalTax = () => 200;
-  const calculateLWF = () => 25;
+  
+  // MLWF - Half yearly (June & December only) - Employee: 25, Employer: 75
+  const mlwfMonthNum = new Date().getMonth() + 1; // 1-12
+  const isMlwfMonth = mlwfMonthNum === 6 || mlwfMonthNum === 12;
+  const calculateMLWFEmployee = () => isMlwfMonth ? 25 : 0;
+  const calculateMLWFEmployer = () => isMlwfMonth ? 75 : 0;
 
   // Calculate payroll metrics
   const activeEmployees = employees.length;
@@ -407,8 +412,8 @@ export default function PayrollPage() {
   const avgSalary = activeEmployees > 0 ? totalSalaryBudget / activeEmployees : 0;
   
   // Step 4: Calculate net salary
-  const calculateNetSalary = (grossSalary: number, epf: number, esic: number, professionalTax: number, lwf: number) => 
-    grossSalary - (epf + esic + professionalTax + lwf);
+  const calculateNetSalary = (grossSalary: number, epf: number, esic: number, professionalTax: number, mlwf: number) => 
+    grossSalary - (epf + esic + professionalTax + mlwf);
 
   // Convenience function to get all salary components
   const getSalaryBreakdown = (monthlyCTC: number) => {
@@ -427,8 +432,9 @@ export default function PayrollPage() {
     const epf = calculateEPF(basicSalary);
     const esic = calculateESIC(grossSalary);
     const professionalTax = calculateProfessionalTax();
-    const lwf = calculateLWF();
-    const netSalary = calculateNetSalary(grossSalary, epf, esic, professionalTax, lwf);
+    const mlwfEmployee = calculateMLWFEmployee();
+    const mlwfEmployer = calculateMLWFEmployer();
+    const netSalary = calculateNetSalary(grossSalary, epf, esic, professionalTax, mlwfEmployee);
     
     return {
       monthlyCTC,
@@ -445,8 +451,9 @@ export default function PayrollPage() {
       epf,
       esic,
       professionalTax,
-      lwf,
-      totalDeductions: epf + esic + professionalTax + lwf,
+      mlwfEmployee,
+      mlwfEmployer,
+      totalDeductions: epf + esic + professionalTax + mlwfEmployee,
       netSalary
     };
   };

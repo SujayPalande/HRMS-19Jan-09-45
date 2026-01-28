@@ -28,19 +28,19 @@ export default function ComplianceReportsPage() {
     { name: "Professional Tax", type: "PT Challan", dueDate: "End of month", status: "Submitted", lastGenerated: "Jan 5, 2024", month: "January 2024" },
     { name: "TDS Quarterly Return", type: "24Q", dueDate: "15th of quarter end", status: "Upcoming", lastGenerated: "Oct 15, 2023", month: "January 2024" },
     { name: "Form 16", type: "Annual", dueDate: "June 15", status: "Not Due", lastGenerated: "Jun 10, 2023", month: "January 2024" },
-    { name: "Labour Welfare Fund", type: "LWF", dueDate: "Bi-annual", status: "Submitted", lastGenerated: "Dec 31, 2023", month: "January 2024" },
+    { name: "MLWF (Maharashtra Labour Welfare Fund)", type: "MLWF", dueDate: "Half-yearly (Jun/Dec)", status: "Submitted", lastGenerated: "Dec 31, 2023", month: "January 2024" },
     { name: "PF Monthly Return", type: "ECR", dueDate: "15th of next month", status: "Submitted", lastGenerated: "Dec 10, 2023", month: "December 2023" },
     { name: "ESI Monthly Return", type: "ESI Challan", dueDate: "15th of next month", status: "Submitted", lastGenerated: "Dec 12, 2023", month: "December 2023" },
     { name: "Professional Tax", type: "PT Challan", dueDate: "End of month", status: "Submitted", lastGenerated: "Dec 28, 2023", month: "December 2023" },
     { name: "TDS Quarterly Return", type: "24Q", dueDate: "15th of quarter end", status: "Submitted", lastGenerated: "Dec 15, 2023", month: "December 2023" },
     { name: "Form 16", type: "Annual", dueDate: "June 15", status: "Not Due", lastGenerated: "Jun 10, 2023", month: "December 2023" },
-    { name: "Labour Welfare Fund", type: "LWF", dueDate: "Bi-annual", status: "Submitted", lastGenerated: "Dec 31, 2023", month: "December 2023" },
+    { name: "MLWF (Maharashtra Labour Welfare Fund)", type: "MLWF", dueDate: "Half-yearly (Jun/Dec)", status: "Submitted", lastGenerated: "Dec 31, 2023", month: "December 2023" },
     { name: "PF Monthly Return", type: "ECR", dueDate: "15th of next month", status: "Submitted", lastGenerated: "Nov 10, 2023", month: "November 2023" },
     { name: "ESI Monthly Return", type: "ESI Challan", dueDate: "15th of next month", status: "Pending", lastGenerated: "Oct 15, 2023", month: "November 2023" },
     { name: "Professional Tax", type: "PT Challan", dueDate: "End of month", status: "Submitted", lastGenerated: "Nov 28, 2023", month: "November 2023" },
     { name: "TDS Quarterly Return", type: "24Q", dueDate: "15th of quarter end", status: "Not Due", lastGenerated: "Oct 15, 2023", month: "November 2023" },
     { name: "Form 16", type: "Annual", dueDate: "June 15", status: "Not Due", lastGenerated: "Jun 10, 2023", month: "November 2023" },
-    { name: "Labour Welfare Fund", type: "LWF", dueDate: "Bi-annual", status: "Not Due", lastGenerated: "Jun 30, 2023", month: "November 2023" },
+    { name: "MLWF (Maharashtra Labour Welfare Fund)", type: "MLWF", dueDate: "Half-yearly (Jun/Dec)", status: "Not Due", lastGenerated: "Jun 30, 2023", month: "November 2023" },
   ];
 
   const reports = useMemo(() => {
@@ -181,14 +181,14 @@ export default function ComplianceReportsPage() {
         headStyles: { fillColor: [0, 128, 128] },
         styles: { fontSize: 10 },
       });
-    } else if (report.type === "LWF") {
+    } else if (report.type === "MLWF") {
       autoTable(doc, {
         startY: orgEndY + 22,
-        head: [['Period', 'Employee Contribution', 'Employer Contribution', 'Total']],
+        head: [['Period', 'Employee Contribution (₹25)', 'Employer Contribution (₹75)', 'Total']],
         body: [
-          ['Jan-Jun', '₹3,120', '₹6,240', '₹9,360'],
-          ['Jul-Dec', '₹3,380', '₹6,760', '₹10,140'],
-          ['Annual Total', '₹6,500', '₹13,000', '₹19,500'],
+          ['June (Half-yearly)', '₹25 per employee', '₹75 per employee', '₹100 per employee'],
+          ['December (Half-yearly)', '₹25 per employee', '₹75 per employee', '₹100 per employee'],
+          ['Annual Total (per employee)', '₹50', '₹150', '₹200'],
         ],
         theme: 'striped',
         headStyles: { fillColor: [0, 128, 128] },

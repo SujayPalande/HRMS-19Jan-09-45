@@ -35,7 +35,7 @@ const masterOptions = [
   { title: "Import Employee", icon: UserPlus, color: "text-teal-600", path: "#" },
   { title: "Import Payrates", icon: ClipboardList, color: "text-amber-600", path: "#" },
   { title: "Login", icon: Key, color: "text-gray-700", path: "#" },
-  { title: "LWF SubCode", icon: Scale, color: "text-blue-500", path: "#" },
+  { title: "MLWF SubCode", icon: Scale, color: "text-blue-500", path: "/master/lwf-subcode" },
   { title: "Missing Details", icon: FileSearch, color: "text-rose-500", path: "#" },
   { title: "PT SubCode", icon: ShieldCheck, color: "text-violet-600", path: "#" },
   { title: "Rate Master", icon: TrendingUp, color: "text-lime-600", path: "#" },

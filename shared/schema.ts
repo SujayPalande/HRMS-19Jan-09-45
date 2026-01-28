@@ -71,7 +71,7 @@ export const users = pgTable("users", {
   esicApplicable: boolean("esic_applicable").default(true),
   ptApplicable: boolean("pt_applicable").default(true),
   incomeTaxApplicable: boolean("income_tax_applicable").default(false),
-  lwfApplicable: boolean("lwf_applicable").default(false),
+  mlwfApplicable: boolean("mlwf_applicable").default(false),
   overtimeApplicable: boolean("overtime_applicable").default(false),
   bonusApplicable: boolean("bonus_applicable").default(false),
   bankName: text("bank_name"),

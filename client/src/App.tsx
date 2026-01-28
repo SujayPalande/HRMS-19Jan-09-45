@@ -33,7 +33,6 @@ import StatutoryCompliancePage from "@/pages/compliance/statutory-compliance-pag
 import SalaryStructurePage from "@/pages/payroll/structure-page";
 import PayslipsPage from "@/pages/payroll/payslips-page";
 import BankTransfersPage from "@/pages/payroll/transfers-page";
-import PayrollTestRunPage from "@/pages/payroll/test-run-page";
 
 import OfferLettersPage from "@/pages/recruitment/offers-page";
 import DigitalJoiningPage from "@/pages/recruitment/joining-page";
@@ -135,8 +134,7 @@ function AppRouter() {
       <ProtectedRoute path="/payroll/structure" component={SalaryStructurePage} />
       <ProtectedRoute path="/payroll/payslips" component={PayslipsPage} />
       <ProtectedRoute path="/payroll/transfers" component={BankTransfersPage} />
-      <ProtectedRoute path="/payroll/test-run" component={PayrollTestRunPage} />
-      
+            
       <ProtectedRoute path="/compliance/pf-esi-pt" component={PfEsiPtPage} />
       <ProtectedRoute path="/compliance/form16-tds" component={Form16TdsPage} />
       <ProtectedRoute path="/compliance/reports" component={ComplianceReportsPage} />

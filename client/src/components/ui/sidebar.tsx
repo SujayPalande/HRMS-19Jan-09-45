@@ -183,8 +183,7 @@ export function Sidebar({ className }: SidebarProps) {
         { title: "Payroll Dashboard", href: "/payroll", icon: <Wallet className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "Salary Structure", href: "/payroll/structure", icon: <Receipt className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "Payslip Generation", href: "/payroll/payslips", icon: <FileText className="h-4 w-4" />, permissions: ["payroll.view"] },
-        { title: "Bank Transfers", href: "/payroll/transfers", icon: <DollarSign className="h-4 w-4" />, permissions: ["payroll.view"] },
-        { title: "Test Run", href: "/payroll/test-run", icon: <Play className="h-4 w-4" />, permissions: ["payroll.view"] }
+        { title: "Bank Transfers", href: "/payroll/transfers", icon: <DollarSign className="h-4 w-4" />, permissions: ["payroll.view"] }
       ]
     },
     {

@@ -114,11 +114,15 @@ export const generateProfessionalPayslip = (data: PayslipData) => {
     const epfEmployee = Math.min(basic, basicLimit) * 0.12;
     const esicEmployee = monthlyGross <= 21000 ? Math.round(monthlyGross * 0.0075) : 0;
     const professionalTax = 200;
-    const lwf = 25; // Labour Welfare Fund
+    // MLWF - Half yearly (June & December only) - Employee: 25, Employer: 75
+    const mlwfMonthNum = new Date().getMonth() + 1;
+    const isMlwfMonth = mlwfMonthNum === 6 || mlwfMonthNum === 12;
+    const mlwfEmployee = isMlwfMonth ? 25 : 0;
     
     // Employer Side (for CTC information if needed in future, but payslip focuses on Net Pay)
     const epfEmployer = Math.min(basic, basicLimit) * 0.13;
     const esicEmployer = monthlyGross <= 21000 ? Math.round(monthlyGross * 0.0325) : 0;
+    const mlwfEmployer = isMlwfMonth ? 75 : 0;
 
     // Overtime Calculation Formula: (Basic+DA)/26/8 * 2
     // For now we use the provided overtime from breakdown, but keeping formula in mind for future dynamic OT entries
@@ -129,11 +133,11 @@ export const generateProfessionalPayslip = (data: PayslipData) => {
       ["Dearness Allowance (DA)", `Rs. ${Math.round(b.da || 0).toLocaleString()}`, "0.00", "Professional Tax (PT)", `Rs. ${Math.round(professionalTax).toLocaleString()}`, "0.00"],
       ["House Rent Allowance (HRA)", `Rs. ${Math.round(b.hra || 0).toLocaleString()}`, "0.00", "ESIC", `Rs. ${Math.round(esicEmployee).toLocaleString()}`, "0.00"],
       ["Conveyance Allowance", `Rs. ${Math.round(b.conveyance || 0).toLocaleString()}`, "0.00", "Income Tax (TDS)", "0.00", "0.00"],
-      ["Medical Allowance", `Rs. ${Math.round(b.medical || 0).toLocaleString()}`, "0.00", "Labour Welfare Fund (LWF)", `Rs. ${lwf}`, "0.00"],
+      ["Medical Allowance", `Rs. ${Math.round(b.medical || 0).toLocaleString()}`, "0.00", "MLWF (Half-yearly Jun/Dec)", `Rs. ${mlwfEmployee}`, "0.00"],
       ["Special Allowance", `Rs. ${Math.round(b.specialAllowance || 0).toLocaleString()}`, "0.00", "Loan / Advance Recovery", "0.00", "0.00"],
       ["Bonus / Incentives", "0.00", "0.00", "Other Deductions", "0.00", "0.00"],
       ["Overtime (OT) / Arrears", "0.00", "0.00", "", "", ""],
-      ["Gross Earnings", `Rs. ${Math.round(monthlyGross).toLocaleString()}`, "0.00", "Total Deductions", `Rs. ${Math.round(epfEmployee + esicEmployee + professionalTax + lwf).toLocaleString()}`, "0.00"],
+      ["Gross Earnings", `Rs. ${Math.round(monthlyGross).toLocaleString()}`, "0.00", "Total Deductions", `Rs. ${Math.round(epfEmployee + esicEmployee + professionalTax + mlwfEmployee).toLocaleString()}`, "0.00"],
     ];
 
     autoTable(doc, {
