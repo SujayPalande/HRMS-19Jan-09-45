@@ -6,13 +6,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, FileText, Download, Upload, IndianRupee, Users, Building2, TrendingUp, CheckCircle } from "lucide-react";
+import { Calculator, FileText, Download, Upload, IndianRupee, Users, Building2, TrendingUp, CheckCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { addCompanyHeader, addWatermark, addHRSignature, addFooter, addDocumentDate, generateReferenceNumber, addReferenceNumber, COMPANY_NAME, COMPANY_ADDRESS } from "@/lib/pdf-utils";
+import { User } from "@shared/schema";
 
 export default function PfEsiPtPage() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -20,41 +22,116 @@ export default function PfEsiPtPage() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   
-  const complianceStats = [
-    { title: "Total PF Contribution", value: "₹12,45,000", change: "+8.2%", icon: <IndianRupee className="h-5 w-5" /> },
-    { title: "ESI Contribution", value: "₹3,45,000", change: "+5.4%", icon: <Building2 className="h-5 w-5" /> },
-    { title: "PT Collected", value: "₹89,500", change: "+2.1%", icon: <Calculator className="h-5 w-5" /> },
-    { title: "Eligible Employees", value: "156", change: "+12", icon: <Users className="h-5 w-5" /> },
-  ];
-
-  const pfData = [
-    { employee: "John Doe", basicSalary: 50000, employeeContrib: 6000, employerContrib: 6000, total: 12000 },
-    { employee: "Jane Smith", basicSalary: 45000, employeeContrib: 5400, employerContrib: 5400, total: 10800 },
-    { employee: "Mike Johnson", basicSalary: 55000, employeeContrib: 6600, employerContrib: 6600, total: 13200 },
-    { employee: "Sarah Wilson", basicSalary: 48000, employeeContrib: 5760, employerContrib: 5760, total: 11520 },
-    { employee: "Rahul Sharma", basicSalary: 52000, employeeContrib: 6240, employerContrib: 6240, total: 12480 },
-    { employee: "Priya Patel", basicSalary: 47000, employeeContrib: 5640, employerContrib: 5640, total: 11280 },
-  ];
-
-  const esiData = [
-    { employee: "John Doe", grossSalary: 18000, employeeContrib: 135, employerContrib: 585, total: 720 },
-    { employee: "Jane Smith", grossSalary: 16500, employeeContrib: 124, employerContrib: 536, total: 660 },
-    { employee: "Mike Johnson", grossSalary: 19000, employeeContrib: 143, employerContrib: 618, total: 761 },
-    { employee: "Amit Kumar", grossSalary: 17500, employeeContrib: 131, employerContrib: 569, total: 700 },
-    { employee: "Neha Gupta", grossSalary: 20000, employeeContrib: 150, employerContrib: 650, total: 800 },
-    { employee: "Raj Verma", grossSalary: 15000, employeeContrib: 113, employerContrib: 488, total: 601 },
-  ];
-
-  const ptData = [
-    { employee: "John Doe", grossSalary: 75000, ptAmount: 200, state: "Maharashtra" },
-    { employee: "Jane Smith", grossSalary: 65000, ptAmount: 200, state: "Maharashtra" },
-    { employee: "Mike Johnson", grossSalary: 85000, ptAmount: 200, state: "Maharashtra" },
-    { employee: "Sarah Wilson", grossSalary: 55000, ptAmount: 175, state: "Karnataka" },
-    { employee: "Rahul Sharma", grossSalary: 72000, ptAmount: 200, state: "Maharashtra" },
-    { employee: "Priya Patel", grossSalary: 45000, ptAmount: 150, state: "Gujarat" },
-    { employee: "Amit Kumar", grossSalary: 38000, ptAmount: 150, state: "Gujarat" },
-    { employee: "Neha Gupta", grossSalary: 95000, ptAmount: 200, state: "Maharashtra" },
-  ];
+  // Fetch real employee data
+  const { data: employees = [], isLoading } = useQuery<User[]>({
+    queryKey: ["/api/employees"],
+  });
+  
+  // Fetch system settings for salary components
+  const { data: systemSettings } = useQuery({
+    queryKey: ["/api/settings/system"],
+    queryFn: async () => {
+      const response = await fetch("/api/settings/system", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        if (response.status === 403) return null;
+        throw new Error("Failed to fetch system settings");
+      }
+      return response.json();
+    },
+    retry: false,
+  });
+  
+  // Get salary component percentages from settings or defaults
+  const salaryComponents = systemSettings?.salaryComponents || {
+    basicSalaryPercentage: 50,
+    hraPercentage: 50,
+    epfPercentage: 12,
+    esicPercentage: 0.75,
+    professionalTax: 200
+  };
+  
+  // Calculate PF data from real employees
+  const pfData = useMemo(() => {
+    return employees
+      .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
+      .map(emp => {
+        const salary = emp.salary!;
+        const monthlyCTC = salary / 12;
+        const basicSalary = Math.round(monthlyCTC * (salaryComponents.basicSalaryPercentage / 100));
+        const employeeContrib = Math.round(basicSalary * 0.12);
+        const employerContrib = Math.round(basicSalary * 0.12);
+        return {
+          employee: `${emp.firstName} ${emp.lastName}`,
+          basicSalary,
+          employeeContrib,
+          employerContrib,
+          total: employeeContrib + employerContrib
+        };
+      });
+  }, [employees, salaryComponents]);
+  
+  // Calculate ESI data - Only for employees with gross salary <= 21000/month
+  const esiData = useMemo(() => {
+    return employees
+      .filter(emp => {
+        if (!emp.isActive || !emp.salary || emp.salary <= 0) return false;
+        const monthlySalary = emp.salary / 12;
+        return monthlySalary <= 21000; // ESI limit
+      })
+      .map(emp => {
+        const salary = emp.salary!;
+        const grossSalary = Math.round(salary / 12);
+        const employeeContrib = Math.round(grossSalary * 0.0075); // 0.75%
+        const employerContrib = Math.round(grossSalary * 0.0325); // 3.25%
+        return {
+          employee: `${emp.firstName} ${emp.lastName}`,
+          grossSalary,
+          employeeContrib,
+          employerContrib,
+          total: employeeContrib + employerContrib
+        };
+      });
+  }, [employees]);
+  
+  // Calculate PT data from real employees
+  const ptData = useMemo(() => {
+    return employees
+      .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
+      .map(emp => {
+        const salary = emp.salary!;
+        const grossSalary = Math.round(salary / 12);
+        // PT varies by state - using Maharashtra default (200)
+        // PT amount based on salary slab
+        let ptAmount = 200; // Default for high salary
+        if (grossSalary < 10000) ptAmount = 0;
+        else if (grossSalary < 15000) ptAmount = 150;
+        else if (grossSalary < 25000) ptAmount = 175;
+        
+        return {
+          employee: `${emp.firstName} ${emp.lastName}`,
+          grossSalary,
+          ptAmount,
+          state: "Maharashtra"
+        };
+      });
+  }, [employees]);
+  
+  // Calculate compliance stats from real data
+  const complianceStats = useMemo(() => {
+    const totalPF = pfData.reduce((sum, row) => sum + row.total, 0);
+    const totalESI = esiData.reduce((sum, row) => sum + row.total, 0);
+    const totalPT = ptData.reduce((sum, row) => sum + row.ptAmount, 0);
+    const eligibleCount = pfData.length;
+    
+    return [
+      { title: "Total PF Contribution", value: `₹${totalPF.toLocaleString()}`, change: `${eligibleCount} emp`, icon: <IndianRupee className="h-5 w-5" /> },
+      { title: "ESI Contribution", value: `₹${totalESI.toLocaleString()}`, change: `${esiData.length} emp`, icon: <Building2 className="h-5 w-5" /> },
+      { title: "PT Collected", value: `₹${totalPT.toLocaleString()}`, change: `${ptData.length} emp`, icon: <Calculator className="h-5 w-5" /> },
+      { title: "Eligible Employees", value: `${eligibleCount}`, change: "Active", icon: <Users className="h-5 w-5" /> },
+    ];
+  }, [pfData, esiData, ptData]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
