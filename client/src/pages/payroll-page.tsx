@@ -2445,13 +2445,40 @@ export default function PayrollPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="daysWorked">Days Worked</Label>
+                    <Input
+                      id="daysWorked"
+                      type="number"
+                      value={paymentForm.daysWorked}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, daysWorked: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="totalDays">Days in Month</Label>
+                    <Input
+                      id="totalDays"
+                      type="number"
+                      value={paymentForm.totalDaysInMonth}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, totalDaysInMonth: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="amount">Amount</Label>
-                  <Input
-                    id="amount"
-                    value={`₹${getPaymentRecord(selectedEmployee?.id || 0)?.amount.toLocaleString() || '0'}`}
-                    disabled
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-muted-foreground">₹</span>
+                    <Input
+                      id="amount"
+                      className="pl-7"
+                      value={Math.round(getSalaryBreakdown(selectedEmployee?.salary || 0, paymentForm.daysWorked, paymentForm.totalDaysInMonth).netSalary).toLocaleString()}
+                      disabled
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Pro-rated based on {paymentForm.daysWorked} days worked.
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="date">Payment Date</Label>
