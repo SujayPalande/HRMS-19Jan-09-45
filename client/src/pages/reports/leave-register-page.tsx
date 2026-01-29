@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Printer, FileSpreadsheet, Download, FileText } from "lucide-react";
+import { Printer, FileSpreadsheet, Download, FileText, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AppLayout } from "@/components/layout/app-layout";
+import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -283,6 +284,8 @@ export default function LeaveRegisterPage() {
     XLSX.utils.book_append_sheet(wb, ws, "Leave Register Form 20");
     XLSX.writeFile(wb, `Leave_Register_Form_20_${selectedYear}.xlsx`);
   };
+
+  const { toast } = useToast();
 
   const handlePrint = () => {
     window.print();

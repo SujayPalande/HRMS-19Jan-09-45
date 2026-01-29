@@ -313,6 +313,8 @@ export default function MusterRollPage() {
     XLSX.writeFile(wb, `Muster_Roll_Form_II_${months.find(m => m.value === selectedMonth)?.label}_${selectedYear}.xlsx`);
   };
 
+  const { toast } = useToast();
+
   const handlePrint = () => {
     window.print();
   };
