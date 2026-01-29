@@ -272,6 +272,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Attendance Bulk Upload Route
+  app.post("/api/attendance/bulk", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+      
+      const { records } = req.body;
+      if (!Array.isArray(records)) {
+        return res.status(400).json({ message: "Invalid records format" });
+      }
+
+      const results = { success: 0, failed: 0 };
+      for (const record of records) {
+        try {
+          // Find employee by ID or Name
+          const employees = await storage.getUsers();
+          const emp = employees.find(e => 
+            e.employeeId === record.employeeId || 
+            `${e.firstName} ${e.lastName}`.toLowerCase() === record.fullName?.toLowerCase()
+          );
+
+          if (!emp) continue;
+
+          // For each day in the record
+          for (let day = 1; day <= 31; day++) {
+            const statusKey = `Day ${day}`;
+            const status = record[statusKey];
+            if (!status) continue;
+
+            const date = new Date(record.year, record.month - 1, day);
+            if (isNaN(date.getTime())) continue;
+
+            // Map status codes
+            let attendanceStatus: 'present' | 'absent' | 'halfday' | 'late' = 'present';
+            const s = String(status).toUpperCase();
+            if (s === 'A') attendanceStatus = 'absent';
+            else if (s === 'H') attendanceStatus = 'halfday';
+            else if (s === 'L') attendanceStatus = 'absent'; // Mapping leave to absent for now or handle specifically
+
+            await storage.createAttendance({
+              userId: emp.id,
+              date,
+              status: attendanceStatus,
+            });
+          }
+          results.success++;
+        } catch (err) {
+          results.failed++;
+        }
+      }
+
+      res.json({ message: "Bulk attendance processed", results });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Leave Requests Bulk Upload Route
+  app.post("/api/leave-requests/bulk", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+      
+      const { records } = req.body;
+      if (!Array.isArray(records)) {
+        return res.status(400).json({ message: "Invalid records format" });
+      }
+
+      const results = { success: 0, failed: 0 };
+      for (const record of records) {
+        try {
+          const employees = await storage.getUsers();
+          const emp = employees.find(e => 
+            e.employeeId === record.employeeId || 
+            `${e.firstName} ${e.lastName}`.toLowerCase() === record.fullName?.toLowerCase()
+          );
+
+          if (!emp) continue;
+
+          // Assuming template provides leave data
+          // Simplified for now: adding a single leave request if balance is used
+          if (record.leaveEnjoyed > 0) {
+            await storage.createLeaveRequest({
+              userId: emp.id,
+              type: 'annual',
+              startDate: new Date(), // Placeholders as exact dates aren't in current template
+              endDate: new Date(),
+              reason: 'Imported from register',
+              status: 'approved',
+            });
+          }
+          results.success++;
+        } catch (err) {
+          results.failed++;
+        }
+      }
+
+      res.json({ message: "Bulk leave requests processed", results });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Set up authentication routes
   setupAuth(app);
 

@@ -363,7 +363,7 @@ export default function MusterRollPage() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: "binary" });
@@ -371,15 +371,27 @@ export default function MusterRollPage() {
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
         
-        console.log("Imported data:", data);
-        toast({
-          title: "Import Successful",
-          description: `Imported ${data.length} records from ${file.name}`,
+        const response = await apiRequest("POST", "/api/attendance/bulk", {
+          records: data.map((row: any) => ({
+            ...row,
+            month: selectedMonth,
+            year: selectedYear
+          }))
         });
+
+        if (response.ok) {
+          queryClient.invalidateQueries({ queryKey: ["/api/attendance"] });
+          toast({
+            title: "Import Successful",
+            description: `Successfully synced records from ${file.name}`,
+          });
+        } else {
+          throw new Error("Failed to sync data");
+        }
       } catch (error) {
         toast({
           title: "Import Failed",
-          description: "Could not parse the file. Please use the provided template.",
+          description: "Could not parse or sync the file. Please use the provided template.",
           variant: "destructive",
         });
       }
