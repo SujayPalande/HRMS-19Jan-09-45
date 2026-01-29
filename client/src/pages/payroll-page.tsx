@@ -2474,27 +2474,29 @@ export default function PayrollPage() {
                   Mark payment as completed for {selectedEmployee?.firstName} {selectedEmployee?.lastName}
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="daysWorked">Days Worked</Label>
-                    <Input
-                      id="daysWorked"
-                      type="number"
-                      value={paymentForm.daysWorked}
-                      onChange={(e) => setPaymentForm({ ...paymentForm, daysWorked: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="totalDays">Days in Month</Label>
-                    <Input
-                      id="totalDays"
-                      type="number"
-                      value={paymentForm.totalDaysInMonth}
-                      onChange={(e) => setPaymentForm({ ...paymentForm, totalDaysInMonth: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="daysWorked">Days Worked (Auto-calculated)</Label>
+                  <Input
+                    id="daysWorked"
+                    type="number"
+                    value={paymentForm.daysWorked}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, daysWorked: parseInt(e.target.value) || 0 })}
+                  />
+                  <p className="text-[10px] text-muted-foreground">Derived from attendance logs.</p>
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="totalDays">Days in Month</Label>
+                  <Input
+                    id="totalDays"
+                    type="number"
+                    value={paymentForm.totalDaysInMonth}
+                    readOnly
+                    className="bg-muted"
+                  />
+                </div>
+              </div>
                 <div className="grid gap-2">
                   <Label htmlFor="amount">Amount</Label>
                   <div className="relative">
