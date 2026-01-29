@@ -375,8 +375,9 @@ export default function PayrollPage() {
     },
   });
 
-  // Step 1: Calculate Gross Salary (Monthly CTC ÷ 30 × 25 payable days)
-  const calculateGrossSalary = (monthlyCTC: number) => (monthlyCTC / 30) * 25;
+  // Step 1: Calculate Gross Salary (Pro-rated based on days worked)
+  const calculateGrossSalary = (monthlyCTC: number, daysWorked: number = 25, totalDaysInMonth: number = 30) => 
+    (monthlyCTC / totalDaysInMonth) * daysWorked;
   
   // Step 2: Calculate earnings breakdown (using dynamic percentages)
   const calculateBasicSalary = (grossSalary: number) => (grossSalary || 0) * ((currentSalaryComponents?.basicSalaryPercentage || 50) / 100);
@@ -416,8 +417,8 @@ export default function PayrollPage() {
     grossSalary - (epf + esic + professionalTax + mlwf);
 
   // Convenience function to get all salary components
-  const getSalaryBreakdown = (monthlyCTC: number) => {
-    const grossSalary = calculateGrossSalary(monthlyCTC);
+  const getSalaryBreakdown = (monthlyCTC: number, daysWorked: number = 25, totalDaysInMonth: number = 30) => {
+    const grossSalary = calculateGrossSalary(monthlyCTC, daysWorked, totalDaysInMonth);
     const basicSalary = calculateBasicSalary(grossSalary);
     const hra = calculateHRA(basicSalary);
     const da = calculateDA(basicSalary);
@@ -438,6 +439,8 @@ export default function PayrollPage() {
     
     return {
       monthlyCTC,
+      daysWorked,
+      totalDaysInMonth,
       grossSalary,
       basicSalary,
       hra,

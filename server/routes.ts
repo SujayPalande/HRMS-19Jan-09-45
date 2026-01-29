@@ -93,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
       
-      const { salary, overtimeHours = 0 } = req.body;
+      const { salary, overtimeHours = 0, daysWorked = 25, totalDaysInMonth = 30 } = req.body;
       const settings = await storage.getSystemSettings();
       const salaryComponents = settings?.salaryComponents || {
         basicSalaryPercentage: 50,
@@ -103,8 +103,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         professionalTax: 200
       };
       
-      // Step 1: Gross Salary = Monthly CTC
-      const gross = salary;
+      // Step 1: Gross Salary (Pro-rated based on days worked)
+      const gross = (salary / totalDaysInMonth) * daysWorked;
       
       // Step 2: Earnings Breakdown
       const basic = gross * (salaryComponents.basicSalaryPercentage / 100);
@@ -144,9 +144,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           basic, da, hra, conveyance, medical, otAmount, specialAllowance, gross
         },
         deductions: {
-          pf, esic, pt, lwf, totalDeductions
+          epf: epfEmployee, esic: esicEmployee, pt, lwf, totalDeductions
         },
-        netSalary
+        netSalary,
+        period: {
+          daysWorked,
+          totalDaysInMonth
+        }
       });
     } catch (error) {
       next(error);
