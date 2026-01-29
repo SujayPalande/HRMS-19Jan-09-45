@@ -209,3 +209,4 @@
 [x] 206. Fixed PF/ESI/PT page to use real employee data instead of dummy data (John Doe, Jane Smith, etc.)
 [x] 207. Synced statutory compliance data with actual employee salary records from the system
 [x] 208. Application restarted with updated payroll data synchronization - January 29, 2026
+[x] 209. Fixed "Invalid hook call" error in handleCompletePayment - removed hooks from inside event handler function
