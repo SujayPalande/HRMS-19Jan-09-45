@@ -6,6 +6,25 @@ export const COMPANY_NAME = "Cybaem Tech";
 export const COMPANY_ADDRESS = "Plot no. 10B, Staff colony, Sector No. 27 Pradhikaran, Nigdi Pune Maharashtra 411035 India";
 export const LOGO_URL = "/images/img.png";
 
+const numberToWords = (num: number): string => {
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  if (num === 0) return 'Zero';
+  if (num.toString().length > 9) return 'Overflow';
+  
+  const n = ('000000000' + num).slice(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return '';
+  
+  let str = '';
+  str += (parseInt(n[1]) !== 0) ? (a[parseInt(n[1])] || b[parseInt(n[1][0])] + ' ' + a[parseInt(n[1][1])]) + 'Crore ' : '';
+  str += (parseInt(n[2]) !== 0) ? (a[parseInt(n[2])] || b[parseInt(n[2][0])] + ' ' + a[parseInt(n[2][1])]) + 'Lakh ' : '';
+  str += (parseInt(n[3]) !== 0) ? (a[parseInt(n[3])] || b[parseInt(n[3][0])] + ' ' + a[parseInt(n[3][1])]) + 'Thousand ' : '';
+  str += (parseInt(n[4]) !== 0) ? (a[parseInt(n[4])] || b[parseInt(n[4][0])] + ' ' + a[parseInt(n[4][1])]) + 'Hundred ' : '';
+  str += (parseInt(n[5]) !== 0) ? ((str !== '') ? 'and ' : '') + (a[parseInt(n[5])] || b[parseInt(n[5][0])] + ' ' + a[parseInt(n[5][1])]) : '';
+  return str.trim();
+};
+
 export interface PayslipData {
   employeeName: string;
   employeeId: string;
@@ -153,11 +172,17 @@ export const generateProfessionalPayslip = (data: PayslipData) => {
 
     const finalY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFillColor(248, 250, 252);
-    doc.rect(20, finalY, pageWidth - 40, 15, 'F');
+    doc.rect(20, finalY, pageWidth - 40, 25, 'F');
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
     doc.text(`Total Net Payable: Rs. ${Math.round(b.net || 0).toLocaleString()}`, 30, finalY + 10);
+    
+    // Amount in words
+    const amountInWords = numberToWords(Math.round(b.net || 0));
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.text(`(Rupees ${amountInWords} Only)`, 30, finalY + 18);
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
