@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Printer, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, Printer, FileSpreadsheet, FileText, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AppLayout } from "@/components/layout/app-layout";
+import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -355,6 +356,35 @@ export default function MusterRollPage() {
     XLSX.writeFile(wb, "Muster_Roll_Form_II_Template.xlsx");
   };
 
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: "binary" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+        
+        console.log("Imported data:", data);
+        toast({
+          title: "Import Successful",
+          description: `Imported ${data.length} records from ${file.name}`,
+        });
+      } catch (error) {
+        toast({
+          title: "Import Failed",
+          description: "Could not parse the file. Please use the provided template.",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <AppLayout>
       <div className="h-full overflow-auto">
@@ -365,6 +395,19 @@ export default function MusterRollPage() {
             <p className="text-muted-foreground">Maharashtra Factories Rules - Muster Roll cum Wage Register</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <div className="relative">
+              <input
+                type="file"
+                className="hidden"
+                id="muster-roll-import"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleImport}
+              />
+              <Button variant="outline" onClick={() => document.getElementById('muster-roll-import')?.click()} data-testid="button-import">
+                <Upload className="h-4 w-4 mr-2" />
+                Import Data
+              </Button>
+            </div>
             <Button variant="outline" onClick={downloadTemplate} data-testid="button-download-template">
               <Download className="h-4 w-4 mr-2" />
               Download Template
