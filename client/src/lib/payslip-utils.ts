@@ -172,17 +172,16 @@ export const generateProfessionalPayslip = (data: PayslipData) => {
 
     const finalY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFillColor(248, 250, 252);
-    doc.rect(20, finalY, pageWidth - 40, 25, 'F');
+    doc.rect(20, finalY, pageWidth - 40, 15, 'F');
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text(`Total Net Payable: Rs. ${Math.round(b.net || 0).toLocaleString()}`, 30, finalY + 10);
     
-    // Amount in words
-    const amountInWords = numberToWords(Math.round(b.net || 0));
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "italic");
-    doc.text(`(Rupees ${amountInWords} Only)`, 30, finalY + 18);
+    const netAmount = Math.round(b.net || 0);
+    const amountInWords = numberToWords(netAmount);
+    const netPayText = `Total Net Payable ₹${netAmount.toLocaleString()}.00 (Indian Rupee ${amountInWords} Only)`;
+    
+    doc.text(netPayText, pageWidth / 2, finalY + 10, { align: "center" });
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
