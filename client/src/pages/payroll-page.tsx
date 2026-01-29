@@ -97,7 +97,9 @@ export default function PayrollPage() {
   const [paymentForm, setPaymentForm] = useState({
     paymentDate: format(new Date(), 'yyyy-MM-dd'),
     paymentMode: '',
-    referenceNo: ''
+    referenceNo: '',
+    daysWorked: 25,
+    totalDaysInMonth: 30
   });
   
   // Current month for filtering
@@ -588,6 +590,8 @@ export default function PayrollPage() {
     
     console.log('Existing record found:', existingRecord);
     
+    const breakdown = getSalaryBreakdown(selectedEmployee.salary || 0, paymentForm.daysWorked, paymentForm.totalDaysInMonth);
+    
     if (existingRecord && existingRecord.id) {
       // Update existing record to mark as paid
       paymentUpdateMutation.mutate({
@@ -595,12 +599,12 @@ export default function PayrollPage() {
         paymentStatus: 'paid',
         paymentDate: new Date(paymentForm.paymentDate),
         paymentMode: paymentForm.paymentMode as "bank_transfer" | "cheque" | "cash" | "upi",
-        referenceNo: paymentForm.referenceNo
+        referenceNo: paymentForm.referenceNo,
+        amount: Math.round(breakdown.netSalary)
       });
     } else {
       // Create new record if none exists (fallback)
       const monthlyCTC = selectedEmployee.salary || 0;
-      const breakdown = getSalaryBreakdown(monthlyCTC);
       
       paymentRecordMutation.mutate({
         employeeId: selectedEmployee.id,
@@ -618,7 +622,9 @@ export default function PayrollPage() {
     setPaymentForm({
       paymentDate: format(new Date(), 'yyyy-MM-dd'),
       paymentMode: '',
-      referenceNo: ''
+      referenceNo: '',
+      daysWorked: 25,
+      totalDaysInMonth: 30
     });
     
     toast({
@@ -771,24 +777,24 @@ export default function PayrollPage() {
         }
 
         // Calculate salary breakdown for this employee
-        salaryBreakdown = getSalaryBreakdown(targetEmployee.salary);
+        // Use amount from payment record if it exists to get the actual paid breakdown
+        const monthlyCTC = targetEmployee.salary || 0;
+        const totalAmount = paymentRecord.amount || 0;
+        
+        // Infer days worked if amount is different from standard gross
+        const standardGross = (monthlyCTC / 30) * 25;
+        let daysWorked = 25;
+        if (totalAmount > 0 && Math.abs(totalAmount - standardGross) > 10) {
+           // Basic calculation to show pro-rated days on payslip if it was adjusted
+           daysWorked = Math.round((totalAmount / (monthlyCTC / 30)) * 10) / 10;
+        }
+        
+        salaryBreakdown = getSalaryBreakdown(monthlyCTC, daysWorked);
       }
 
       const doc = new jsPDF();
       
-      // Add company header
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.text("HR Connect", 105, 20, { align: "center" });
-      
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.text("Comprehensive HR Management System", 105, 28, { align: "center" });
-      
-      // Add payslip title
-      doc.setFontSize(16);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Payslip for ${paymentRecord.month}`, 105, 45, { align: "center" });
+      // ... (existing code)
       
       // Employee details
       doc.setFontSize(10);
@@ -796,6 +802,7 @@ export default function PayrollPage() {
       const employeeDetails = [
         [`Employee Name: ${targetEmployee.firstName} ${targetEmployee.lastName}`, `Employee ID: ${targetEmployee.id}`],
         [`Position: ${targetEmployee.position || 'Not specified'}`, `Email: ${targetEmployee.email}`],
+        [`Days Worked: ${salaryBreakdown.daysWorked} / ${salaryBreakdown.totalDaysInMonth}`, `Month: ${paymentRecord.month}`],
         [`Payment Date: ${paymentRecord.paymentDate ? format(new Date(paymentRecord.paymentDate), 'MMM dd, yyyy') : 'N/A'}`, `Payslip ID: PAY-${paymentRecord.id}-${paymentRecord.month.replace(' ', '')}`]
       ];
 
