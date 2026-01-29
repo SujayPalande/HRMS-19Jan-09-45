@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Download, Printer, FileSpreadsheet, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppLayout } from "@/components/layout/app-layout";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -355,183 +356,185 @@ export default function MusterRollPage() {
   };
 
   return (
-    <div className="h-full overflow-auto">
-      <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Muster Roll - Form II</h1>
-          <p className="text-muted-foreground">Maharashtra Factories Rules - Muster Roll cum Wage Register</p>
+    <AppLayout>
+      <div className="h-full overflow-auto">
+        <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold" data-testid="text-page-title">Muster Roll - Form II</h1>
+            <p className="text-muted-foreground">Maharashtra Factories Rules - Muster Roll cum Wage Register</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={downloadTemplate} data-testid="button-download-template">
+              <Download className="h-4 w-4 mr-2" />
+              Download Template
+            </Button>
+            <Button variant="outline" onClick={handlePrint} data-testid="button-print">
+              <Printer className="h-4 w-4 mr-2" />
+              Print
+            </Button>
+            <Button variant="outline" onClick={exportToPDF} data-testid="button-export-pdf">
+              <FileText className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
+            <Button onClick={exportToExcel} data-testid="button-export-excel">
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export Excel
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={downloadTemplate} data-testid="button-download-template">
-            <Download className="h-4 w-4 mr-2" />
-            Download Template
-          </Button>
-          <Button variant="outline" onClick={handlePrint} data-testid="button-print">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button variant="outline" onClick={exportToPDF} data-testid="button-export-pdf">
-            <FileText className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
-          <Button onClick={exportToExcel} data-testid="button-export-excel">
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Export Excel
-          </Button>
-        </div>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Report Settings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>Establishment Name</Label>
-              <Input 
-                value={establishmentName} 
-                onChange={(e) => setEstablishmentName(e.target.value)}
-                data-testid="input-establishment-name"
-              />
+        <Card>
+          <CardHeader>
+            <CardTitle>Report Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label>Establishment Name</Label>
+                <Input 
+                  value={establishmentName} 
+                  onChange={(e) => setEstablishmentName(e.target.value)}
+                  data-testid="input-establishment-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Employer Name</Label>
+                <Input 
+                  value={employerName} 
+                  onChange={(e) => setEmployerName(e.target.value)}
+                  data-testid="input-employer-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Month</Label>
+                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                  <SelectTrigger data-testid="select-month">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((m) => (
+                      <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Year</Label>
+                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                  <SelectTrigger data-testid="select-year">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((y) => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Employer Name</Label>
-              <Input 
-                value={employerName} 
-                onChange={(e) => setEmployerName(e.target.value)}
-                data-testid="input-employer-name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Month</Label>
-              <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                <SelectTrigger data-testid="select-month">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((m) => (
-                    <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Year</Label>
-              <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                <SelectTrigger data-testid="select-year">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((y) => (
-                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card className="print:shadow-none">
-        <CardHeader className="print:pb-2">
-          <div className="text-center space-y-1">
-            <p className="text-sm font-medium">Form II - Muster Roll cum Wage Register</p>
-            <p className="text-xs text-muted-foreground">[See Rule 27(1)]</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-            <div>
-              <p><strong>Name of the Establishment:</strong> {establishmentName}</p>
-              <p><strong>Name of the Employer:</strong> {employerName}</p>
+        <Card className="print:shadow-none">
+          <CardHeader className="print:pb-2">
+            <div className="text-center space-y-1">
+              <p className="text-sm font-medium">Form II - Muster Roll cum Wage Register</p>
+              <p className="text-xs text-muted-foreground">[See Rule 27(1)]</p>
             </div>
-            <div className="text-right">
-              <p><strong>For the month of:</strong> {months.find(m => m.value === selectedMonth)?.label} {selectedYear}</p>
+            <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+              <div>
+                <p><strong>Name of the Establishment:</strong> {establishmentName}</p>
+                <p><strong>Name of the Employer:</strong> {employerName}</p>
+              </div>
+              <div className="text-right">
+                <p><strong>For the month of:</strong> {months.find(m => m.value === selectedMonth)?.label} {selectedYear}</p>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table className="text-xs">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-center w-10" rowSpan={2}>Sl No</TableHead>
-                <TableHead className="min-w-[150px]" rowSpan={2}>Full name of employee</TableHead>
-                <TableHead className="text-center w-16" rowSpan={2}>Age/Sex</TableHead>
-                <TableHead className="min-w-[100px]" rowSpan={2}>Designation</TableHead>
-                <TableHead className="text-center w-20" rowSpan={2}>DOJ</TableHead>
-                <TableHead className="text-center" colSpan={daysInMonth}>Hours worked on</TableHead>
-                <TableHead className="text-center w-12" rowSpan={2}>Total Days</TableHead>
-                <TableHead className="text-center w-16" rowSpan={2}>Daily Rate</TableHead>
-                <TableHead className="text-center w-12" rowSpan={2}>OT Hrs</TableHead>
-                <TableHead className="text-center w-16" rowSpan={2}>Normal Wages</TableHead>
-                <TableHead className="text-center w-14" rowSpan={2}>HRA</TableHead>
-                <TableHead className="text-center w-14" rowSpan={2}>OT Pay</TableHead>
-                <TableHead className="text-center w-16" rowSpan={2}>Gross</TableHead>
-                <TableHead className="text-center w-14" rowSpan={2}>Deductions</TableHead>
-                <TableHead className="text-center w-16" rowSpan={2}>Net Wages</TableHead>
-              </TableRow>
-              <TableRow>
-                {Array.from({ length: daysInMonth }, (_, i) => (
-                  <TableHead key={i} className="text-center w-8 p-1">{i + 1}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.length === 0 ? (
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table className="text-xs">
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={15 + daysInMonth} className="text-center py-8 text-muted-foreground">
-                    No employees found. Add employees to generate muster roll.
-                  </TableCell>
+                  <TableHead className="text-center w-10" rowSpan={2}>Sl No</TableHead>
+                  <TableHead className="min-w-[150px]" rowSpan={2}>Full name of employee</TableHead>
+                  <TableHead className="text-center w-16" rowSpan={2}>Age/Sex</TableHead>
+                  <TableHead className="min-w-[100px]" rowSpan={2}>Designation</TableHead>
+                  <TableHead className="text-center w-20" rowSpan={2}>DOJ</TableHead>
+                  <TableHead className="text-center" colSpan={daysInMonth}>Hours worked on</TableHead>
+                  <TableHead className="text-center w-12" rowSpan={2}>Total Days</TableHead>
+                  <TableHead className="text-center w-16" rowSpan={2}>Daily Rate</TableHead>
+                  <TableHead className="text-center w-12" rowSpan={2}>OT Hrs</TableHead>
+                  <TableHead className="text-center w-16" rowSpan={2}>Normal Wages</TableHead>
+                  <TableHead className="text-center w-14" rowSpan={2}>HRA</TableHead>
+                  <TableHead className="text-center w-14" rowSpan={2}>OT Pay</TableHead>
+                  <TableHead className="text-center w-16" rowSpan={2}>Gross</TableHead>
+                  <TableHead className="text-center w-14" rowSpan={2}>Deductions</TableHead>
+                  <TableHead className="text-center w-16" rowSpan={2}>Net Wages</TableHead>
                 </TableRow>
-              ) : (
-                employees.map((emp, index) => {
-                  const data = calculateEmployeeData(emp);
-                  const dob = emp.dateOfBirth ? new Date(emp.dateOfBirth) : null;
-                  const age = dob ? Math.floor((new Date().getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : "-";
+                <TableRow>
+                  {Array.from({ length: daysInMonth }, (_, i) => (
+                    <TableHead key={i} className="text-center w-8 p-1">{i + 1}</TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {employees.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={15 + daysInMonth} className="text-center py-8 text-muted-foreground">
+                      No employees found. Add employees to generate muster roll.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  employees.map((emp, index) => {
+                    const data = calculateEmployeeData(emp);
+                    const dob = emp.dateOfBirth ? new Date(emp.dateOfBirth) : null;
+                    const age = dob ? Math.floor((new Date().getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : "-";
 
-                  return (
-                    <TableRow key={emp.id} data-testid={`row-employee-${emp.id}`}>
-                      <TableCell className="text-center">{index + 1}</TableCell>
-                      <TableCell className="font-medium">{emp.firstName} {emp.lastName}</TableCell>
-                      <TableCell className="text-center">{age}/{emp.gender?.[0] || "M"}</TableCell>
-                      <TableCell>{emp.position || "-"}</TableCell>
-                      <TableCell className="text-center">{emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }) : "-"}</TableCell>
-                      {Array.from({ length: daysInMonth }, (_, i) => (
-                        <TableCell key={i} className="text-center p-1">
-                          {getAttendanceForDay(emp.id, i + 1)}
-                        </TableCell>
-                      ))}
-                      <TableCell className="text-center font-medium">{data.totalDaysWorked}</TableCell>
-                      <TableCell className="text-center">{data.dailyRate}</TableCell>
-                      <TableCell className="text-center">{data.overtimeHours}</TableCell>
-                      <TableCell className="text-center">{data.normalWages}</TableCell>
-                      <TableCell className="text-center">{data.hraPayable}</TableCell>
-                      <TableCell className="text-center">{data.overtimePayable}</TableCell>
-                      <TableCell className="text-center font-medium">{data.grossWages}</TableCell>
-                      <TableCell className="text-center">{data.totalDeductions}</TableCell>
-                      <TableCell className="text-center font-medium">{data.netWages}</TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                    return (
+                      <TableRow key={emp.id} data-testid={`row-employee-${emp.id}`}>
+                        <TableCell className="text-center">{index + 1}</TableCell>
+                        <TableCell className="font-medium">{emp.firstName} {emp.lastName}</TableCell>
+                        <TableCell className="text-center">{age}/{emp.gender?.[0] || "M"}</TableCell>
+                        <TableCell>{emp.position || "-"}</TableCell>
+                        <TableCell className="text-center">{emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }) : "-"}</TableCell>
+                        {Array.from({ length: daysInMonth }, (_, i) => (
+                          <TableCell key={i} className="text-center p-1">
+                            {getAttendanceForDay(emp.id, i + 1)}
+                          </TableCell>
+                        ))}
+                        <TableCell className="text-center font-medium">{data.totalDaysWorked}</TableCell>
+                        <TableCell className="text-center">{data.dailyRate}</TableCell>
+                        <TableCell className="text-center">{data.overtimeHours}</TableCell>
+                        <TableCell className="text-center">{data.normalWages}</TableCell>
+                        <TableCell className="text-center">{data.hraPayable}</TableCell>
+                        <TableCell className="text-center">{data.overtimePayable}</TableCell>
+                        <TableCell className="text-center font-medium">{data.grossWages}</TableCell>
+                        <TableCell className="text-center">{data.totalDeductions}</TableCell>
+                        <TableCell className="text-center font-medium">{data.netWages}</TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-      <div className="print:block hidden text-sm mt-8">
-          <div className="flex justify-between">
-            <div>
-              <p>Signature of the Authorised Representative:</p>
-              <p>Principal Employer (In the case of Contract Labour):</p>
-            </div>
-            <div className="text-right">
-              <p>Signature of the Employer or the person authorised</p>
-              <p>by him to authenticate the above entries with the company seal</p>
+        <div className="print:block hidden text-sm mt-8">
+            <div className="flex justify-between">
+              <div>
+                <p>Signature of the Authorised Representative:</p>
+                <p>Principal Employer (In the case of Contract Labour):</p>
+              </div>
+              <div className="text-right">
+                <p>Signature of the Employer or the person authorised</p>
+                <p>by him to authenticate the above entries with the company seal</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
