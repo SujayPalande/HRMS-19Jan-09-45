@@ -181,8 +181,8 @@ export default function StatutoryCompliancePage() {
         }
         
         const pfWages = calculatePFWages(basicSalary);
-        const employerPF = calculateEmployerPF(pfWages);
-        const pensionFund = calculatePensionFund(pfWages);
+        const employerPF = Math.round(pfWages * 0.0367);
+        const pensionFund = Math.round(pfWages * 0.0833);
 
         return {
           uan: emp.uanNumber || `10${Math.floor(1000000000 + Math.random() * 9000000000)}`,
