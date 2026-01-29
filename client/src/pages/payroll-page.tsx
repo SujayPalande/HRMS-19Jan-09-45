@@ -588,7 +588,37 @@ export default function PayrollPage() {
       r.employeeId === selectedEmployee.id && r.month === currentMonth
     );
     
-    console.log('Existing record found:', existingRecord);
+    // Get actual attendance for the current month if available
+    const { data: attendance = [] } = useQuery<Attendance[]>({
+      queryKey: ["/api/attendance"],
+    });
+
+    const getAttendanceDays = (userId: number, monthStr: string) => {
+      const monthDate = new Date(monthStr);
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const records = attendance.filter(a => {
+        const d = new Date(a.date);
+        return d.getFullYear() === year && d.getMonth() === month && a.userId === userId;
+      });
+      
+      const presentDays = records.filter(r => r.status === 'present').length;
+      const halfDays = records.filter(r => r.status === 'halfday').length * 0.5;
+      
+      return presentDays + halfDays || 25; // Fallback to 25 if no records
+    };
+
+    useEffect(() => {
+      if (selectedEmployee) {
+        const autoDays = getAttendanceDays(selectedEmployee.id, currentMonth);
+        setPaymentForm(prev => ({
+          ...prev,
+          daysWorked: autoDays
+        }));
+      }
+    }, [selectedEmployee, attendance]);
     
     const breakdown = getSalaryBreakdown(selectedEmployee.salary || 0, paymentForm.daysWorked, paymentForm.totalDaysInMonth);
     
