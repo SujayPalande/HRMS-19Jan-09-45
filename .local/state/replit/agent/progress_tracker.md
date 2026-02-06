@@ -218,3 +218,5 @@
    218→[x] 218. Updated payslip layout to match official format with amount in words inline - January 29, 2026
 [x] 219. Re-installed cross-env package and restarted workflow with webview output - February 6, 2026
 [x] 220. ALL MIGRATION TASKS COMPLETE: Application successfully running on port 5000 - February 6, 2026
+[x] 221. Removed Compliance Reports page from Reports & Analysis section - February 6, 2026
+[x] 222. Removed Statutory Reports from Statutory Compliance tab in sidebar - February 6, 2026

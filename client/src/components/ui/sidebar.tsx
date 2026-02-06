@@ -194,8 +194,7 @@ export function Sidebar({ className }: SidebarProps) {
       items: [
         { title: "PF/ESI/PT", href: "/compliance/pf-esi-pt", icon: <Calculator className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "PF/ESI/Bonus Reports", href: "/compliance/statutory", icon: <FileSpreadsheet className="h-4 w-4" />, permissions: ["payroll.view"] },
-        { title: "Form 16 & TDS", href: "/compliance/form16-tds", icon: <FileText className="h-4 w-4" />, permissions: ["payroll.view"] },
-        { title: "Statutory Reports", href: "/compliance/reports", icon: <FileBarChart className="h-4 w-4" />, permissions: ["payroll.view"] }
+        { title: "Form 16 & TDS", href: "/compliance/form16-tds", icon: <FileText className="h-4 w-4" />, permissions: ["payroll.view"] }
       ]
     },
     {
@@ -286,8 +285,7 @@ export function Sidebar({ className }: SidebarProps) {
         { title: "Payroll Reports", href: "/reports/payroll", icon: <DollarSign className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Muster Roll - Form II", href: "/reports/muster-roll", icon: <ClipboardList className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Leave Register - Form 20", href: "/reports/leave-register", icon: <BookOpen className="h-4 w-4" />, permissions: ["reports.view"] },
-        { title: "Headcount Report", href: "/reports/headcount", icon: <Users className="h-4 w-4" />, permissions: ["reports.view"] },
-        { title: "Compliance Reports", href: "/reports/compliance", icon: <Scale className="h-4 w-4" />, permissions: ["reports.view"] }
+        { title: "Headcount Report", href: "/reports/headcount", icon: <Users className="h-4 w-4" />, permissions: ["reports.view"] }
       ]
     }
   ];

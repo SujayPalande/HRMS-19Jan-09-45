@@ -27,7 +27,6 @@ import ShiftsPage from "@/pages/shifts-page";
 
 import PfEsiPtPage from "@/pages/compliance/pf-esi-pt-page";
 import Form16TdsPage from "@/pages/compliance/form16-tds-page";
-import ComplianceReportsPage from "@/pages/compliance/reports-page";
 import StatutoryCompliancePage from "@/pages/compliance/statutory-compliance-page";
 
 import SalaryStructurePage from "@/pages/payroll/structure-page";
@@ -137,7 +136,6 @@ function AppRouter() {
             
       <ProtectedRoute path="/compliance/pf-esi-pt" component={PfEsiPtPage} />
       <ProtectedRoute path="/compliance/form16-tds" component={Form16TdsPage} />
-      <ProtectedRoute path="/compliance/reports" component={ComplianceReportsPage} />
       <ProtectedRoute path="/compliance/statutory" component={StatutoryCompliancePage} />
       
       <ProtectedRoute path="/recruitment/offers" component={OfferLettersPage} />
