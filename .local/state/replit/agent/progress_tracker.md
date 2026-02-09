@@ -220,3 +220,7 @@
 [x] 220. ALL MIGRATION TASKS COMPLETE: Application successfully running on port 5000 - February 6, 2026
 [x] 221. Removed Compliance Reports page from Reports & Analysis section - February 6, 2026
 [x] 222. Removed Statutory Reports from Statutory Compliance tab in sidebar - February 6, 2026
+[x] 223. Renamed "Form 16 & TDS" to "Form 16" in sidebar navigation - February 10, 2026
+[x] 224. Added EDLI (0.5%) and Admin charges (0.5%) columns to Provident Fund section - February 10, 2026
+[x] 225. Updated PF calculations to include EDLI and Admin charges based on basic salary - February 10, 2026
+[x] 226. Updated PF compliance report PDF generation to include new columns - February 10, 2026

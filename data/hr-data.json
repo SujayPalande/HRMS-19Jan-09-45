@@ -4600,6 +4600,15 @@
       "checkOutTime": "2026-01-27T18:00:00.000Z",
       "notes": "System Migration Fix: late",
       "id": 518
+    },
+    {
+      "userId": 29,
+      "checkInTime": "2026-02-09T03:51:25.168Z",
+      "date": "2026-02-09T03:51:25.168Z",
+      "status": "present",
+      "notes": "",
+      "id": 519,
+      "checkOutTime": null
     }
   ],
   "leaveRequests": [
@@ -12966,19 +12975,41 @@
       "type": "login",
       "title": "Successful Login",
       "message": "You have successfully logged in at 2/6/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 706,
       "createdAt": "2026-02-06T11:03:48.154Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/6/2026",
+      "isRead": true,
+      "id": 707,
+      "createdAt": "2026-02-06T11:19:04.537Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/9/2026",
+      "isRead": true,
+      "id": 708,
+      "createdAt": "2026-02-09T03:48:03.713Z",
       "relatedUserId": null,
       "relatedLeaveId": null
     }
   ],
   "currentUserId": 40,
   "currentDepartmentId": 11,
-  "currentAttendanceId": 519,
+  "currentAttendanceId": 520,
   "currentLeaveRequestId": 41,
   "currentHolidayId": 67,
-  "currentNotificationId": 707,
+  "currentNotificationId": 709,
   "paymentRecords": [
     {
       "id": 1,

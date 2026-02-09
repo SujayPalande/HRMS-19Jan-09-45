@@ -62,12 +62,16 @@ export default function PfEsiPtPage() {
         const basicSalary = Math.round(monthlyCTC * (salaryComponents.basicSalaryPercentage / 100));
         const employeeContrib = Math.round(basicSalary * 0.12);
         const employerContrib = Math.round(basicSalary * 0.12);
+        const edliContrib = Math.round(basicSalary * 0.005);
+        const adminCharges = Math.round(basicSalary * 0.005);
         return {
           employee: `${emp.firstName} ${emp.lastName}`,
           basicSalary,
           employeeContrib,
           employerContrib,
-          total: employeeContrib + employerContrib
+          edliContrib,
+          adminCharges,
+          total: employeeContrib + employerContrib + edliContrib + adminCharges
         };
       });
   }, [employees, salaryComponents]);
@@ -192,12 +196,14 @@ export default function PfEsiPtPage() {
     
     autoTable(doc, {
       startY: 130,
-      head: [['Employee', 'Basic Salary', 'Employee (12%)', 'Employer (12%)', 'Total']],
+      head: [['Employee', 'Basic Salary', 'Employee (12%)', 'Employer (12%)', 'EDLI (0.5%)', 'Admin (0.5%)', 'Total']],
       body: pfData.map(row => [
         row.employee,
         `Rs. ${row.basicSalary.toLocaleString()}`,
         `Rs. ${row.employeeContrib.toLocaleString()}`,
         `Rs. ${row.employerContrib.toLocaleString()}`,
+        `Rs. ${row.edliContrib.toLocaleString()}`,
+        `Rs. ${row.adminCharges.toLocaleString()}`,
         `Rs. ${row.total.toLocaleString()}`
       ]),
       theme: 'striped',
@@ -373,6 +379,8 @@ export default function PfEsiPtPage() {
                         <th className="text-left py-3 px-4 font-medium text-slate-600">Basic Salary</th>
                         <th className="text-left py-3 px-4 font-medium text-slate-600">Employee (12%)</th>
                         <th className="text-left py-3 px-4 font-medium text-slate-600">Employer (12%)</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">EDLI (0.5%)</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Admin Charges (0.5%)</th>
                         <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
                       </tr>
                     </thead>
@@ -383,6 +391,8 @@ export default function PfEsiPtPage() {
                           <td className="py-3 px-4">₹{row.basicSalary.toLocaleString()}</td>
                           <td className="py-3 px-4">₹{row.employeeContrib.toLocaleString()}</td>
                           <td className="py-3 px-4">₹{row.employerContrib.toLocaleString()}</td>
+                          <td className="py-3 px-4">₹{row.edliContrib.toLocaleString()}</td>
+                          <td className="py-3 px-4">₹{row.adminCharges.toLocaleString()}</td>
                           <td className="py-3 px-4 font-medium text-teal-600">₹{row.total.toLocaleString()}</td>
                         </tr>
                       ))}
