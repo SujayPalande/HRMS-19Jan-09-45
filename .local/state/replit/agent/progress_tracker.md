@@ -224,3 +224,7 @@
 [x] 224. Added EDLI (0.5%) and Admin charges (0.5%) columns to Provident Fund section - February 10, 2026
 [x] 225. Updated PF calculations to include EDLI and Admin charges based on basic salary - February 10, 2026
 [x] 226. Updated PF compliance report PDF generation to include new columns - February 10, 2026
+[x] 227. Implemented split view for Muster Roll (attendance only) and Wage Register (attendance + wages) - February 10, 2026
+[x] 228. Added toggle option to switch between Muster Roll and Wage Register views - February 10, 2026
+[x] 229. Updated report tables to show specific components for each view type - February 10, 2026
+[x] 230. Enhanced PDF export to support both Muster Roll and Wage Register formats - February 10, 2026

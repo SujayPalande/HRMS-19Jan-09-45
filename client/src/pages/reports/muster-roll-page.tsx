@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface Employee {
   id: number;
@@ -59,6 +61,7 @@ export default function MusterRollPage() {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [establishmentName, setEstablishmentName] = useState("ASN HR Consultancy & Services");
   const [employerName, setEmployerName] = useState("ASN HR Consultancy");
+  const [viewType, setViewType] = useState<"muster" | "wage">("muster");
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/employees"],
@@ -173,7 +176,7 @@ export default function MusterRollPage() {
     const monthName = months.find(m => m.value === selectedMonth)?.label || "";
     
     doc.setFontSize(14);
-    doc.text("Form II - Muster Roll cum Wage Register", doc.internal.pageSize.width / 2, 15, { align: "center" });
+    doc.text(viewType === "muster" ? "Form II - Muster Roll" : "Form II - Wage Register", doc.internal.pageSize.width / 2, 15, { align: "center" });
     doc.setFontSize(10);
     doc.text("[See Rule 27(1)]", doc.internal.pageSize.width / 2, 21, { align: "center" });
     
@@ -182,49 +185,54 @@ export default function MusterRollPage() {
     doc.text(`Name of the Employer: ${employerName}`, 14, 36);
     doc.text(`For the month of: ${monthName} ${selectedYear}`, doc.internal.pageSize.width - 14, 30, { align: "right" });
 
-    const dayHeaders = Array.from({ length: Math.min(daysInMonth, 15) }, (_, i) => String(i + 1));
+    const dayHeaders = Array.from({ length: viewType === "muster" ? Math.min(daysInMonth, 15) : daysInMonth }, (_, i) => String(i + 1));
     
     const tableData = employees.map((emp, index) => {
       const data = calculateEmployeeData(emp);
       const dob = emp.dateOfBirth ? new Date(emp.dateOfBirth) : null;
       const age = dob ? Math.floor((new Date().getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : "-";
-      const attendanceMarks = Array.from({ length: Math.min(daysInMonth, 15) }, (_, i) => getAttendanceForDay(emp.id, i + 1));
+      const attendanceMarks = dayHeaders.map(day => getAttendanceForDay(emp.id, Number(day)));
       
-      return [
-        index + 1,
-        `${emp.firstName} ${emp.lastName}`,
-        `${age}/${emp.gender?.[0] || "M"}`,
-        emp.position || "-",
-        ...attendanceMarks,
-        data.totalDaysWorked,
-        data.basicSalary,
-        data.normalWages,
-        data.hraPayable,
-        data.pfDeduction,
-        data.esiDeduction,
-        data.grossWages,
-        data.totalDeductions,
-        data.netWages
-      ];
+      if (viewType === "muster") {
+        return [
+          index + 1,
+          `${emp.firstName} ${emp.lastName}`,
+          `${age}/${emp.gender?.[0] || "M"}`,
+          emp.position || "-",
+          ...attendanceMarks,
+          data.totalDaysWorked
+        ];
+      } else {
+        return [
+          index + 1,
+          `${emp.firstName} ${emp.lastName}`,
+          `${age}/${emp.gender?.[0] || "M"}`,
+          emp.position || "-",
+          ...attendanceMarks,
+          data.totalDaysWorked,
+          data.basicSalary,
+          data.normalWages,
+          data.hraPayable,
+          data.pfDeduction,
+          data.esiDeduction,
+          data.grossWages,
+          data.totalDeductions,
+          data.netWages
+        ];
+      }
     });
+
+    const head = viewType === "muster" 
+      ? [["Sl", "Name", "Age/Sex", "Designation", ...dayHeaders, "Days"]]
+      : [["Sl", "Name", "Age/Sex", "Designation", ...dayHeaders, "Days", "Basic", "Wages", "HRA", "PF", "ESI", "Gross", "Ded.", "Net"]];
 
     autoTable(doc, {
       startY: 42,
-      head: [[
-        "Sl", "Name", "Age/Sex", "Designation",
-        ...dayHeaders,
-        "Days", "Basic", "Wages", "HRA", "PF", "ESI", "Gross", "Ded.", "Net"
-      ]],
+      head: head,
       body: tableData,
       theme: "grid",
-      styles: { fontSize: 6, cellPadding: 1 },
-      headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 6 },
-      columnStyles: {
-        0: { cellWidth: 8 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 12 },
-        3: { cellWidth: 18 }
-      }
+      styles: { fontSize: viewType === "muster" ? 7 : 5, cellPadding: 1 },
+      headStyles: { fillColor: [34, 139, 34], textColor: 255 },
     });
 
     const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 150;
@@ -443,7 +451,15 @@ export default function MusterRollPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Report Settings</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Report Settings</CardTitle>
+              <Tabs value={viewType} onValueChange={(v) => setViewType(v as "muster" | "wage")} className="w-auto">
+                <TabsList className="grid w-64 grid-cols-2">
+                  <TabsTrigger value="muster">Muster Roll</TabsTrigger>
+                  <TabsTrigger value="wage">Wage Register</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -496,7 +512,7 @@ export default function MusterRollPage() {
         <Card className="print:shadow-none">
           <CardHeader className="print:pb-2">
             <div className="text-center space-y-1">
-              <p className="text-sm font-medium">Form II - Muster Roll cum Wage Register</p>
+              <p className="text-sm font-medium">{viewType === "muster" ? "Form II - Muster Roll" : "Form II - Wage Register"}</p>
               <p className="text-xs text-muted-foreground">[See Rule 27(1)]</p>
             </div>
             <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
@@ -517,20 +533,27 @@ export default function MusterRollPage() {
                   <TableHead className="min-w-[150px]" rowSpan={2}>Full name of employee</TableHead>
                   <TableHead className="text-center w-16" rowSpan={2}>Age/Sex</TableHead>
                   <TableHead className="min-w-[100px]" rowSpan={2}>Designation</TableHead>
-                  <TableHead className="text-center w-20" rowSpan={2}>DOJ</TableHead>
-                  <TableHead className="text-center" colSpan={daysInMonth}>Hours worked on</TableHead>
-                  <TableHead className="text-center w-12" rowSpan={2}>Total Days</TableHead>
-                  <TableHead className="text-center w-16" rowSpan={2}>Daily Rate</TableHead>
-                  <TableHead className="text-center w-12" rowSpan={2}>OT Hrs</TableHead>
-                  <TableHead className="text-center w-16" rowSpan={2}>Normal Wages</TableHead>
-                  <TableHead className="text-center w-14" rowSpan={2}>HRA</TableHead>
-                  <TableHead className="text-center w-14" rowSpan={2}>OT Pay</TableHead>
-                  <TableHead className="text-center w-16" rowSpan={2}>Gross</TableHead>
-                  <TableHead className="text-center w-14" rowSpan={2}>Deductions</TableHead>
-                  <TableHead className="text-center w-16" rowSpan={2}>Net Wages</TableHead>
+                  {viewType === "muster" ? (
+                    <>
+                      <TableHead className="text-center" colSpan={daysInMonth}>Attendance</TableHead>
+                      <TableHead className="text-center w-12" rowSpan={2}>Days</TableHead>
+                    </>
+                  ) : (
+                    <>
+                      <TableHead className="text-center" colSpan={15}>Attendance (1-15)</TableHead>
+                      <TableHead className="text-center w-12" rowSpan={2}>Days</TableHead>
+                      <TableHead className="text-center w-16" rowSpan={2}>Basic Wages</TableHead>
+                      <TableHead className="text-center w-14" rowSpan={2}>HRA</TableHead>
+                      <TableHead className="text-center w-14" rowSpan={2}>PF</TableHead>
+                      <TableHead className="text-center w-14" rowSpan={2}>ESI</TableHead>
+                      <TableHead className="text-center w-16" rowSpan={2}>Gross</TableHead>
+                      <TableHead className="text-center w-14" rowSpan={2}>Ded.</TableHead>
+                      <TableHead className="text-center w-16" rowSpan={2}>Net</TableHead>
+                    </>
+                  )}
                 </TableRow>
                 <TableRow>
-                  {Array.from({ length: daysInMonth }, (_, i) => (
+                  {Array.from({ length: viewType === "muster" ? daysInMonth : 15 }, (_, i) => (
                     <TableHead key={i} className="text-center w-8 p-1">{i + 1}</TableHead>
                   ))}
                 </TableRow>
@@ -538,8 +561,8 @@ export default function MusterRollPage() {
               <TableBody>
                 {employees.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={15 + daysInMonth} className="text-center py-8 text-muted-foreground">
-                      No employees found. Add employees to generate muster roll.
+                    <TableCell colSpan={viewType === "muster" ? 5 + daysInMonth : 14 + 15} className="text-center py-8 text-muted-foreground">
+                      No employees found. Add employees to generate report.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -554,21 +577,32 @@ export default function MusterRollPage() {
                         <TableCell className="font-medium">{emp.firstName} {emp.lastName}</TableCell>
                         <TableCell className="text-center">{age}/{emp.gender?.[0] || "M"}</TableCell>
                         <TableCell>{emp.position || "-"}</TableCell>
-                        <TableCell className="text-center">{emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }) : "-"}</TableCell>
-                        {Array.from({ length: daysInMonth }, (_, i) => (
-                          <TableCell key={i} className="text-center p-1">
-                            {getAttendanceForDay(emp.id, i + 1)}
-                          </TableCell>
-                        ))}
-                        <TableCell className="text-center font-medium">{data.totalDaysWorked}</TableCell>
-                        <TableCell className="text-center">{data.dailyRate}</TableCell>
-                        <TableCell className="text-center">{data.overtimeHours}</TableCell>
-                        <TableCell className="text-center">{data.normalWages}</TableCell>
-                        <TableCell className="text-center">{data.hraPayable}</TableCell>
-                        <TableCell className="text-center">{data.overtimePayable}</TableCell>
-                        <TableCell className="text-center font-medium">{data.grossWages}</TableCell>
-                        <TableCell className="text-center">{data.totalDeductions}</TableCell>
-                        <TableCell className="text-center font-medium">{data.netWages}</TableCell>
+                        {viewType === "muster" ? (
+                          <>
+                            {Array.from({ length: daysInMonth }, (_, i) => (
+                              <TableCell key={i} className="text-center p-1">
+                                {getAttendanceForDay(emp.id, i + 1)}
+                              </TableCell>
+                            ))}
+                            <TableCell className="text-center font-medium">{data.totalDaysWorked}</TableCell>
+                          </>
+                        ) : (
+                          <>
+                            {Array.from({ length: 15 }, (_, i) => (
+                              <TableCell key={i} className="text-center p-1">
+                                {getAttendanceForDay(emp.id, i + 1)}
+                              </TableCell>
+                            ))}
+                            <TableCell className="text-center font-medium">{data.totalDaysWorked}</TableCell>
+                            <TableCell className="text-center">{data.basicSalary}</TableCell>
+                            <TableCell className="text-center">{data.hraPayable}</TableCell>
+                            <TableCell className="text-center">{data.pfDeduction}</TableCell>
+                            <TableCell className="text-center">{data.esiDeduction}</TableCell>
+                            <TableCell className="text-center font-medium">{data.grossWages}</TableCell>
+                            <TableCell className="text-center">{data.totalDeductions}</TableCell>
+                            <TableCell className="text-center font-medium text-teal-600">{data.netWages}</TableCell>
+                          </>
+                        )}
                       </TableRow>
                     );
                   })
