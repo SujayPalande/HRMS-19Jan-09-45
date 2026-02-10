@@ -231,3 +231,4 @@
 [x] 231. Re-installed cross-env package and restarted workflow with webview output - February 10, 2026
 [x] 232. ALL MIGRATION TASKS COMPLETE: Application successfully running on port 5000 - February 10, 2026
 [x] 233. Shifted Statutory Compliance tab under Reports & Analytics section in sidebar - February 10, 2026
+[x] 234. Created dedicated tabs for PF, ESI, PT, and MLWF in the Statutory Compliance page - February 10, 2026

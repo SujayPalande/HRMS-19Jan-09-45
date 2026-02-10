@@ -121,21 +121,38 @@ export default function PfEsiPtPage() {
         };
       });
   }, [employees]);
+
+  // Calculate MLWF data from real employees
+  const mlwfData = useMemo(() => {
+    return employees
+      .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
+      .map(emp => {
+        // MLWF deductions: Employee ₹25, Employer ₹75 (Half-yearly: June & December)
+        return {
+          employee: `${emp.firstName} ${emp.lastName}`,
+          employeeContrib: 25,
+          employerContrib: 75,
+          total: 100,
+          period: "Half-yearly (June/Dec)"
+        };
+      });
+  }, [employees]);
   
   // Calculate compliance stats from real data
   const complianceStats = useMemo(() => {
     const totalPF = pfData.reduce((sum, row) => sum + row.total, 0);
     const totalESI = esiData.reduce((sum, row) => sum + row.total, 0);
     const totalPT = ptData.reduce((sum, row) => sum + row.ptAmount, 0);
+    const totalMLWF = mlwfData.reduce((sum, row) => sum + row.total, 0);
     const eligibleCount = pfData.length;
     
     return [
       { title: "Total PF Contribution", value: `₹${totalPF.toLocaleString()}`, change: `${eligibleCount} emp`, icon: <IndianRupee className="h-5 w-5" /> },
       { title: "ESI Contribution", value: `₹${totalESI.toLocaleString()}`, change: `${esiData.length} emp`, icon: <Building2 className="h-5 w-5" /> },
       { title: "PT Collected", value: `₹${totalPT.toLocaleString()}`, change: `${ptData.length} emp`, icon: <Calculator className="h-5 w-5" /> },
-      { title: "Eligible Employees", value: `${eligibleCount}`, change: "Active", icon: <Users className="h-5 w-5" /> },
+      { title: "MLWF Contribution", value: `₹${totalMLWF.toLocaleString()}`, change: "June/Dec", icon: <Scale className="h-5 w-5" /> },
     ];
-  }, [pfData, esiData, ptData]);
+  }, [pfData, esiData, ptData, mlwfData]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -364,123 +381,166 @@ export default function PfEsiPtPage() {
             <CardDescription>Monthly PF, ESI, and Professional Tax details</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="pf">
-              <TabsList>
-                <TabsTrigger value="pf" data-testid="tab-pf">Provident Fund</TabsTrigger>
-                <TabsTrigger value="esi" data-testid="tab-esi">ESI</TabsTrigger>
-                <TabsTrigger value="pt" data-testid="tab-pt">Professional Tax</TabsTrigger>
-              </TabsList>
-              <TabsContent value="pf" className="mt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Basic Salary</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employee (12%)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employer (12%)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">EDLI (0.5%)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Admin Charges (0.5%)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
+          <Tabs defaultValue="pf">
+            <TabsList>
+              <TabsTrigger value="pf" data-testid="tab-pf">PF</TabsTrigger>
+              <TabsTrigger value="esi" data-testid="tab-esi">ESI</TabsTrigger>
+              <TabsTrigger value="pt" data-testid="tab-pt">PT</TabsTrigger>
+              <TabsTrigger value="mlwf" data-testid="tab-mlwf">MLWF</TabsTrigger>
+            </TabsList>
+            <TabsContent value="pf" className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Basic Salary</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee (12%)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employer (12%)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">EDLI (0.5%)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Admin Charges (0.5%)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pfData.map((row, index) => (
+                      <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-pf-${index}`}>
+                        <td className="py-3 px-4 font-medium">{row.employee}</td>
+                        <td className="py-3 px-4">₹{row.basicSalary.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.employeeContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.employerContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.edliContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.adminCharges.toLocaleString()}</td>
+                        <td className="py-3 px-4 font-medium text-teal-600">₹{row.total.toLocaleString()}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {pfData.map((row, index) => (
-                        <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-pf-${index}`}>
-                          <td className="py-3 px-4 font-medium">{row.employee}</td>
-                          <td className="py-3 px-4">₹{row.basicSalary.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{row.employeeContrib.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{row.employerContrib.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{row.edliContrib.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{row.adminCharges.toLocaleString()}</td>
-                          <td className="py-3 px-4 font-medium text-teal-600">₹{row.total.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </TabsContent>
-              <TabsContent value="esi" className="mt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Gross Salary (Monthly)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employee (0.75%)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employer (3.25%)</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Total ESI</th>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+            <TabsContent value="esi" className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Gross Salary (Monthly)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee (0.75%)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employer (3.25%)</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Total ESI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {esiData.map((row, index) => (
+                      <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-esi-${index}`}>
+                        <td className="py-3 px-4 font-medium">{row.employee}</td>
+                        <td className="py-3 px-4">₹{row.grossSalary.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.employeeContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.employerContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4 font-medium text-teal-600">₹{row.total.toLocaleString()}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {esiData.map((row, index) => (
-                        <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-esi-${index}`}>
-                          <td className="py-3 px-4 font-medium">{row.employee}</td>
-                          <td className="py-3 px-4">₹{row.grossSalary.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{row.employeeContrib.toLocaleString()}</td>
-                          <td className="py-3 px-4">₹{row.employerContrib.toLocaleString()}</td>
-                          <td className="py-3 px-4 font-medium text-teal-600">₹{row.total.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-slate-50">
-                      <tr>
-                        <td colSpan={4} className="py-3 px-4 font-semibold text-slate-700">Total ESI Contribution</td>
-                        <td className="py-3 px-4 font-bold text-teal-700">
-                          ₹{esiData.reduce((sum, row) => sum + row.total, 0).toLocaleString()}
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-50">
+                    <tr>
+                      <td colSpan={4} className="py-3 px-4 font-semibold text-slate-700">Total ESI Contribution</td>
+                      <td className="py-3 px-4 font-bold text-teal-700">
+                        ₹{esiData.reduce((sum, row) => sum + row.total, 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  <strong>Note:</strong> ESI is applicable for employees with gross salary up to ₹21,000/month. 
+                  Employee contribution is 0.75% and employer contribution is 3.25%.
+                </p>
+              </div>
+            </TabsContent>
+            <TabsContent value="pt" className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Gross Salary</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">State</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">PT Amount (Monthly)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ptData.map((row, index) => (
+                      <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-pt-${index}`}>
+                        <td className="py-3 px-4 font-medium">{row.employee}</td>
+                        <td className="py-3 px-4">₹{row.grossSalary.toLocaleString()}</td>
+                        <td className="py-3 px-4">
+                          <Badge variant="outline">{row.state}</Badge>
+                        </td>
+                        <td className="py-3 px-4 font-medium text-teal-600">₹{row.ptAmount.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-50">
+                    <tr>
+                      <td colSpan={3} className="py-3 px-4 font-semibold text-slate-700">Total PT Collection (Monthly)</td>
+                      <td className="py-3 px-4 font-bold text-teal-700">
+                        ₹{ptData.reduce((sum, row) => sum + row.ptAmount, 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div className="mt-4 p-4 bg-amber-50 rounded-lg">
+                <p className="text-sm text-amber-700">
+                  <strong>Note:</strong> Professional Tax rates vary by state. Maharashtra: ₹200/month (max), 
+                  Karnataka: ₹175/month (max), Gujarat: ₹150/month (max). Employers must deposit PT by the end of each month.
+                </p>
+              </div>
+            </TabsContent>
+            <TabsContent value="mlwf" className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employee Contrib.</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Employer Contrib.</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600">Period</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mlwfData.map((row, index) => (
+                      <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-mlwf-${index}`}>
+                        <td className="py-3 px-4 font-medium">{row.employee}</td>
+                        <td className="py-3 px-4">₹{row.employeeContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4">₹{row.employerContrib.toLocaleString()}</td>
+                        <td className="py-3 px-4 font-medium text-teal-600">₹{row.total.toLocaleString()}</td>
+                        <td className="py-3 px-4">
+                          <Badge variant="outline">{row.period}</Badge>
                         </td>
                       </tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> ESI is applicable for employees with gross salary up to ₹21,000/month. 
-                    Employee contribution is 0.75% and employer contribution is 3.25%.
-                  </p>
-                </div>
-              </TabsContent>
-              <TabsContent value="pt" className="mt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Employee</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">Gross Salary</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">State</th>
-                        <th className="text-left py-3 px-4 font-medium text-slate-600">PT Amount (Monthly)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ptData.map((row, index) => (
-                        <tr key={index} className="border-b hover:bg-slate-50" data-testid={`row-pt-${index}`}>
-                          <td className="py-3 px-4 font-medium">{row.employee}</td>
-                          <td className="py-3 px-4">₹{row.grossSalary.toLocaleString()}</td>
-                          <td className="py-3 px-4">
-                            <Badge variant="outline">{row.state}</Badge>
-                          </td>
-                          <td className="py-3 px-4 font-medium text-teal-600">₹{row.ptAmount.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-slate-50">
-                      <tr>
-                        <td colSpan={3} className="py-3 px-4 font-semibold text-slate-700">Total PT Collection (Monthly)</td>
-                        <td className="py-3 px-4 font-bold text-teal-700">
-                          ₹{ptData.reduce((sum, row) => sum + row.ptAmount, 0).toLocaleString()}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div className="mt-4 p-4 bg-amber-50 rounded-lg">
-                  <p className="text-sm text-amber-700">
-                    <strong>Note:</strong> Professional Tax rates vary by state. Maharashtra: ₹200/month (max), 
-                    Karnataka: ₹175/month (max), Gujarat: ₹150/month (max). Employers must deposit PT by the end of each month.
-                  </p>
-                </div>
-              </TabsContent>
-            </Tabs>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-50">
+                    <tr>
+                      <td colSpan={3} className="py-3 px-4 font-semibold text-slate-700">Total MLWF Collection</td>
+                      <td colSpan={2} className="py-3 px-4 font-bold text-teal-700">
+                        ₹{mlwfData.reduce((sum, row) => sum + row.total, 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+                <p className="text-sm text-purple-700">
+                  <strong>Note:</strong> Maharashtra Labour Welfare Fund (MLWF) is deducted half-yearly in June and December. 
+                  Employee contribution is ₹25 and employer contribution is ₹75.
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
           </CardContent>
         </Card>
       </div>
