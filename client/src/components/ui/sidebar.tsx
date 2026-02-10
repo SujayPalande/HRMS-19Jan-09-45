@@ -187,94 +187,6 @@ export function Sidebar({ className }: SidebarProps) {
       ]
     },
     {
-      id: "statutory-compliance",
-      title: "Statutory Compliance",
-      icon: <Scale className="h-5 w-5" />,
-      adminOnly: true,
-      items: [
-        { title: "PF/ESI/PT", href: "/compliance/pf-esi-pt", icon: <Calculator className="h-4 w-4" />, permissions: ["payroll.view"] },
-        { title: "PF/ESI/Bonus Reports", href: "/compliance/statutory", icon: <FileSpreadsheet className="h-4 w-4" />, permissions: ["payroll.view"] },
-        { title: "Form 16", href: "/compliance/form16-tds", icon: <FileText className="h-4 w-4" />, permissions: ["payroll.view"] }
-      ]
-    },
-    {
-      id: "recruitment",
-      title: "Recruitment & Onboarding",
-      icon: <Briefcase className="h-5 w-5" />,
-      adminOnly: true,
-      items: [
-        { title: "Offer Letters", href: "/recruitment/offers", icon: <FileSignature className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Digital Joining", href: "/recruitment/joining", icon: <UserCheck className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Document Portal", href: "/recruitment/documents", icon: <FileArchive className="h-4 w-4" />, permissions: ["employees.view"] }
-      ]
-    },
-    {
-      id: "performance",
-      title: "Performance Management",
-      icon: <Target className="h-5 w-5" />,
-      items: [
-        { title: "Goals & KPIs", href: "/performance/goals", icon: <Target className="h-4 w-4" /> },
-        { title: "Appraisals", href: "/performance/appraisals", icon: <TrendingUp className="h-4 w-4" /> },
-        { title: "360° Feedback", href: "/performance/feedback", icon: <Award className="h-4 w-4" /> },
-        { title: "Performance Reports", href: "/performance/reports", icon: <BarChart3 className="h-4 w-4" /> }
-      ]
-    },
-    {
-      id: "training",
-      title: "Training & Development",
-      icon: <GraduationCap className="h-5 w-5" />,
-      items: [
-        { title: "Training Calendar", href: "/training/calendar", icon: <Calendar className="h-4 w-4" /> },
-        { title: "Skill Matrix", href: "/training/skills", icon: <ClipboardList className="h-4 w-4" /> },
-        { title: "Certifications", href: "/training/certifications", icon: <Award className="h-4 w-4" /> },
-        { title: "Training Requests", href: "/training/requests", icon: <BookOpen className="h-4 w-4" /> }
-      ]
-    },
-    {
-      id: "expense",
-      title: "Expense & Travel",
-      icon: <Car className="h-5 w-5" />,
-      items: [
-        { title: "Expense Claims", href: "/expense/claims", icon: <Receipt className="h-4 w-4" /> },
-        { title: "Travel Requests", href: "/expense/travel", icon: <Truck className="h-4 w-4" /> },
-        { title: "Reimbursements", href: "/expense/reimbursements", icon: <Wallet className="h-4 w-4" /> }
-      ]
-    },
-    {
-      id: "assets",
-      title: "Asset Management",
-      icon: <Package className="h-5 w-5" />,
-      adminOnly: true,
-      items: [
-        { title: "Asset Allocation", href: "/assets/allocation", icon: <Box className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Asset Tracking", href: "/assets/tracking", icon: <Package className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Asset Returns", href: "/assets/returns", icon: <FileCheck className="h-4 w-4" />, permissions: ["employees.view"] }
-      ]
-    },
-    {
-      id: "letters",
-      title: "HR Letters & Documents",
-      icon: <FileText className="h-5 w-5" />,
-      adminOnly: true,
-      items: [
-        { title: "Appointment Letters", href: "/letters/appointment", icon: <FileSignature className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Increment Letters", href: "/letters/increment", icon: <TrendingUp className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Warning Letters", href: "/letters/warning", icon: <AlertTriangle className="h-4 w-4" />, permissions: ["employees.view"] },
-        { title: "Experience Letters", href: "/letters/experience", icon: <Award className="h-4 w-4" />, permissions: ["employees.view"] }
-      ]
-    },
-    {
-      id: "self-service",
-      title: "Self Service",
-      icon: <UserCheck className="h-5 w-5" />,
-      items: [
-        { title: "My Profile", href: "/self-service/profile", icon: <Users className="h-4 w-4" /> },
-        { title: "My Payslips", href: "/self-service/payslips", icon: <FileText className="h-4 w-4" /> },
-        { title: "My Documents", href: "/self-service/documents", icon: <Download className="h-4 w-4" /> },
-        { title: "My Attendance", href: "/self-service/attendance", icon: <Clock className="h-4 w-4" /> }
-      ]
-    },
-    {
       id: "reports",
       title: "Reports & Analytics",
       icon: <BarChart3 className="h-5 w-5" />,
@@ -285,7 +197,11 @@ export function Sidebar({ className }: SidebarProps) {
         { title: "Payroll Reports", href: "/reports/payroll", icon: <DollarSign className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Muster Roll - Form II", href: "/reports/muster-roll", icon: <ClipboardList className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Leave Register - Form 20", href: "/reports/leave-register", icon: <BookOpen className="h-4 w-4" />, permissions: ["reports.view"] },
-        { title: "Headcount Report", href: "/reports/headcount", icon: <Users className="h-4 w-4" />, permissions: ["reports.view"] }
+        { title: "Headcount Report", href: "/reports/headcount", icon: <Users className="h-4 w-4" />, permissions: ["reports.view"] },
+        { title: "Statutory Compliance", href: "/compliance/pf-esi-pt", icon: <Scale className="h-4 w-4" />, permissions: ["payroll.view"] },
+        { title: "PF/ESI/PT", href: "/compliance/pf-esi-pt", icon: <Calculator className="h-4 w-4" />, permissions: ["payroll.view"] },
+        { title: "PF/ESI/Bonus Reports", href: "/compliance/statutory", icon: <FileSpreadsheet className="h-4 w-4" />, permissions: ["payroll.view"] },
+        { title: "Form 16", href: "/compliance/form16-tds", icon: <FileText className="h-4 w-4" />, permissions: ["payroll.view"] }
       ]
     }
   ];
